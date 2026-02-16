@@ -423,15 +423,39 @@ class LoginView(QWidget):
         self.auth_worker.finished_signal.connect(self.on_login_finished)
         self.auth_worker.start()
 
+
     def on_login_finished(self, success, data):
-        if hasattr(self, 'loading_movie') and self.loading_movie: self.loading_movie.stop()
+        if hasattr(self, 'loading_movie') and self.loading_movie: 
+            self.loading_movie.stop()
+        
         if success:
-            if self.remember_cb.isChecked(): self.settings.setValue("auth_token", data.get("token"))
-            else: self.settings.remove("auth_token")
+            my_token = ""
+            if isinstance(data, dict):
+                my_token = data.get("token", "")
+            elif isinstance(data, str):
+                my_token = data
+
+            if not my_token:
+                QMessageBox.critical(self, "Token Hatası", "Giriş yapıldı ama sunucu token göndermedi!")
+                self.stacked_widget.setCurrentWidget(self.login_widget)
+                return
+
+            pure_token = str(my_token).strip()
+            self.settings.setValue("auth_token", pure_token)
+            
+            # --- YENİ: OTURUMU AÇIK TUT KONTROLÜ ---
+            if hasattr(self, 'cb_remember') and self.cb_remember.isChecked():
+                self.settings.setValue("remember_me", True)
+            else:
+                self.settings.setValue("remember_me", False)
+            # --------------------------------------
+
+            self.settings.sync() 
             self.main_window.show_dashboard()
         else:
             self.stacked_widget.setCurrentWidget(self.login_widget)
-            QMessageBox.critical(self, "Hata", data)
+            QMessageBox.critical(self, "Hata", str(data))
+
 
     def handle_register(self):
         name = self.reg_name.text().strip(); email = self.reg_email.text().strip(); pw = self.reg_pw.text().strip()

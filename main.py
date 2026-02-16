@@ -105,7 +105,18 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    app.setStyle("Fusion") 
     window = MainWindow()
+    
+    # --- YENİ: BAŞLANGIÇTA OTURUM KONTROLÜ ---
+    settings = QSettings("MySaaS", "DesktopClient")
+    remember_me = settings.value("remember_me", False, type=bool)
+    token = settings.value("auth_token", "")
+    
+    if remember_me and token:
+        window.show_dashboard() # Oturumu açık tut işaretliyse direkt içeri gir
+    else:
+        window.show_login()     # İşaretli değilse Login ekranını göster
+    # -----------------------------------------
+    
     window.show()
     sys.exit(app.exec())

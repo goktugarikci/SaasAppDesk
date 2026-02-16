@@ -1,33 +1,38 @@
 # api/auth_api.py
-from core.api_client import ApiClient
-from core import config
+import requests
 
-api = ApiClient()
+BASE_URL = "http://localhost:8080/api"
 
 def login(email, password):
-    response = api.post("auth/login", data={"email": email, "password": password})
-    if response.status_code == 200:
-        data = response.json()
-        config.CURRENT_TOKEN = data.get("token")
-        return True, data
-    return False, response.text if response.text else "E-posta veya şifre hatalı."
+    """C++ Sunucusuna giriş isteği atar ve yanıtı döndürür."""
+    try:
+        url = f"{BASE_URL}/auth/login"
+        payload = {"email": email, "password": password}
+        response = requests.post(url, json=payload, timeout=5)
+
+        if response.status_code == 200:
+            # ÖNEMLİ: C++'dan gelen tüm JSON yanıtını (Token dahil) geri döndür
+            return True, response.json()
+        else:
+            return False, f"Giriş başarısız. Lütfen bilgilerinizi kontrol edin. (Hata: {response.status_code})"
+    except Exception as e:
+        return False, f"Sunucuya bağlanılamadı: {e}"
 
 def register(name, email, password):
-    response = api.post("auth/register", data={"name": name, "email": email, "password": password})
-    if response.status_code == 201:
-        return True, "Kayıt başarılı! Şimdi giriş yapabilirsiniz."
-    return False, "Kayıt başarısız. Bu e-posta zaten kullanımda olabilir."
+    try:
+        url = f"{BASE_URL}/auth/register"
+        payload = {"name": name, "email": email, "password": password}
+        response = requests.post(url, json=payload, timeout=5)
+        if response.status_code in [200, 201]:
+            return True, "Kayıt başarılı! Lütfen giriş yapın."
+        else:
+            return False, f"Kayıt başarısız. (Hata: {response.status_code})"
+    except Exception as e:
+        return False, f"Sunucu hatası: {e}"
 
+# Google Auth kısımları (Eğer kullanıyorsanız dokunmayın, aynı kalsın)
 def get_google_auth_url():
-    response = api.get("auth/google/url")
-    if response.status_code == 200:
-        return response.json().get("url")
     return None
 
-def verify_google_code(auth_code):
-    response = api.post("auth/google/callback", data={"code": auth_code})
-    if response.status_code == 200:
-        data = response.json()
-        config.CURRENT_TOKEN = data.get("token")
-        return True, data
-    return False, "Google doğrulaması başarısız oldu."
+def verify_google_code(code):
+    return False, "Google Auth henüz backend'e bağlanmadı."
