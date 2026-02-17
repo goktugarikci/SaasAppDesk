@@ -9,146 +9,8 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
 from PySide6.QtCore import Qt, QSize, QSettings, QThread, Signal, QTimer, QPropertyAnimation, QEasingCurve
 from PySide6.QtGui import QIcon, QFont, QColor, QPixmap
 
-DASHBOARD_LANGS = {
-    'TR': {
-        'logo': "☁️ MySaaS Workspace", 'menu_title': "SUNUCULARIM",
-        'status_online': "🟢", 'status_offline': "⚫", 'logout_tip': "Ayarlar / Çıkış",
-        'theme_dark': "🌙 Koyu Tema", 'theme_light': "☀️ Açık Tema",
-        'select_title': "Çalışma Modelinizi Seçin", 'select_sub': "İhtiyaçlarınıza en uygun kullanım türünü belirleyerek başlayın.",
-        'std_card_title': "Standart Kullanıcı", 'std_card_desc': "Bireysel kullanım için temel özellikler ve 1 sunucu hakkı.", 'btn_continue': "Ücretsiz Devam Et",
-        'ent_card_title': "Enterprise (Premium)", 'ent_card_desc': "Ekipler ve şirketler için sınırsız erişim ve gelişmiş özellikler.", 'btn_examine': "Paketi İncele",
-        'welcome_title': "MySaaS'a Hoş Geldiniz!", 'welcome_sub': "Çalışmaya başlamak için aşağıdaki seçeneklerden birini seçin.",
-        'card_create_title': "Sunucu Oluştur", 'card_create_desc': "Kendi topluluğunuzu veya özel çalışma alanınızı kurun.", 'card_create_btn': "Oluştur",
-        'card_join_title': "Sunucuya Katıl", 'card_join_desc': "Elinizdeki davet bağlantısı ile mevcut bir sunucuya katılın.", 'card_join_btn': "Katıl",
-        'card_friend_title': "Arkadaş Ekle", 'card_friend_desc': "Arkadaşlarınızı ekleyerek anında direkt mesajlaşmaya başlayın.", 'card_friend_btn': "Ekle",
-        'ent_pay_title': "Enterprise Paket İçeriği", 'ent_pay_price': "$9.99 / Aylık",
-        'ent_f1': "★ Sınırsız Sunucu ve Çalışma Panosu", 'ent_f2': "★ Gelişmiş Görüntülü Arama & Sesli Sohbet",
-        'ent_f3': "★ Sınırsız Dosya Yükleme Kapasitesi", 'ent_f4': "★ 7/24 Öncelikli Teknik Destek",
-        'btn_pay': "💳 Ödeme Yap", 'btn_back': "⬅ Geri Dön",
-        'setup_title': "Sunucu Kurulum ve Ayarları", 'setup_sub': "Yeni çalışma alanınıza bir isim verin ve ekibinizi toplamaya başlayın.",
-        'setup_btn_icon': "📷 Sunucu İkonu Yükle (Opsiyonel)", 'setup_ph': "Sunucu Adı (Örn: Proje X Ekibi)", 
-        'setup_btn_create': "🚀 Sunucuyu Kur", 'setup_btn_cancel': "İptal",
-        'dlg_join_title': "Bir Sunucuya Katıl", 'dlg_join_sub': "Arkadaşınızdan aldığınız davet kodunu veya bağlantısını aşağıya girin.",
-        'dlg_join_ph': "Davet Kodu veya URL", 'dlg_btn_cancel': "İptal",
-        'search_title': "Arkadaş Bul & Ekle", 'search_sub': "Kullanıcı adı veya e-posta adresi ile arkadaşlarınızı arayın.",
-        'search_ph': "Kullanıcı Adı veya E-posta...", 'search_no_result': "Kullanıcı bulunamadı.", 'search_btn_add': "Ekle", 'search_btn_close': "Kapat",
-        'err_invalid_invite': "Geçersiz veya süresi dolmuş bir davet kodu girdiniz!",
-        'err_freemium_limit': "Ücretsiz planda maksimum sunucu limitinize (1) ulaştınız. Lütfen Enterprise pakete yükseltin.",
-        'err_401': "Oturum süreniz dolmuş veya geçersiz (401). Lütfen tekrar giriş yapın.",
-        'no_servers': "📌 Henüz sunucu yok",
-        'cat_text': "💬 METİN KANALLARI", 'cat_board': "📋 PANO KANALLARI",
-        'chat_ph': "Mesajınızı yazın...", 'btn_send': "Gönder",
-        'tip_mic': "Mikrofonu Aç/Kapat", 'tip_deaf': "Sesi Aç/Kapat",
-        'home_btn': "Ana Sayfa", 'friends_title': "👥 Arkadaşlar", 'friends_online': "Çevrimiçi", 'friends_all': "Tümü",
-        'friends_search': "Arkadaşlarda Ara...", 'friends_empty': "Henüz arkadaş listeniz boş.", 'btn_search_friend': "🔍 Arkadaş Ara",
-        
-        # AYARLAR MODALI ÇEVİRİLERİ (YENİLENMİŞ)
-        'set_cat_personal': "👤 Kişisel Ayarlar", 'set_cat_server': "🏢 Sunucu Ayarları", 'set_cat_logout': "🚪 Çıkış Yap",
-        'set_pers_title': "Hesabım", 'set_pers_name': "Kullanıcı Adı (Değiştirilemez)", 'set_pers_email': "E-posta Adresi (Değiştirilemez)",
-        'set_pers_save': "Değişiklikleri Kaydet", 'set_srv_title': "Sunucu Ayarları (Genel)", 'set_srv_desc': "Yönetici olduğunuz sunucuların genel ayarlarını buradan yapılandırabilirsiniz.",
-        'set_avatar_btn': "Fotoğraf Yükle",
-        'set_acc_title': "Hesap Bilgileri",
-        'set_acc_type': "Hesap Türü: Standart",
-        'set_acc_limit': "Sunucu Kurma Hakkı: 1",
-        'set_acc_upgrade': "🚀 Enterprise'a Yükselt ($9.99/Aylık)",
-        'set_pass_title': "Şifre Değiştir",
-        'set_pass_old': "Mevcut Şifre",
-        'set_pass_new': "Yeni Şifre",
-        'set_pass_rep': "Yeni Şifre (Tekrar)"
-    },
-    'EN': {
-        'logo': "☁️ MySaaS Workspace", 'menu_title': "MY SERVERS",
-        'status_online': "🟢", 'status_offline': "⚫", 'logout_tip': "Settings / Logout",
-        'theme_dark': "🌙 Dark Mode", 'theme_light': "☀️ Light Mode",
-        'select_title': "Choose Your Working Model", 'select_sub': "Start by selecting the plan that best fits your needs.",
-        'std_card_title': "Standard User", 'std_card_desc': "Basic features for individual use and 1 server limit.", 'btn_continue': "Continue for Free",
-        'ent_card_title': "Enterprise (Premium)", 'ent_card_desc': "Unlimited access and advanced features for teams and companies.", 'btn_examine': "View Package",
-        'welcome_title': "Welcome to MySaaS!", 'welcome_sub': "Choose one of the options below to get started.",
-        'card_create_title': "Create Server", 'card_create_desc': "Set up your own community or private workspace.", 'card_create_btn': "Create",
-        'card_join_title': "Join Server", 'card_join_desc': "Join an existing server using an invite link.", 'card_join_btn': "Join",
-        'card_friend_title': "Add Friend", 'card_friend_desc': "Add your friends to start direct messaging instantly.", 'card_friend_btn': "Add Friend",
-        'ent_pay_title': "Enterprise Package Details", 'ent_pay_price': "$9.99 / Month",
-        'ent_f1': "★ Unlimited Servers and Workspaces", 'ent_f2': "★ Advanced Video & Voice Chat",
-        'ent_f3': "★ Unlimited File Upload Capacity", 'ent_f4': "★ 24/7 Priority Technical Support",
-        'btn_pay': "💳 Make Payment", 'btn_back': "⬅ Go Back",
-        'setup_title': "Server Setup & Settings", 'setup_sub': "Give your new workspace a name and start gathering your team.",
-        'setup_btn_icon': "📷 Upload Server Icon (Optional)", 'setup_ph': "Server Name (e.g. Project X Team)", 
-        'setup_btn_create': "🚀 Create Server", 'setup_btn_cancel': "Cancel",
-        'dlg_join_title': "Join a Server", 'dlg_join_sub': "Enter an invite code or link provided by your friend below.",
-        'dlg_join_ph': "Invite Code or URL", 'dlg_btn_cancel': "Cancel",
-        'search_title': "Find & Add Friends", 'search_sub': "Search for friends using their username or email address.",
-        'search_ph': "Username or Email...", 'search_no_result': "No users found.", 'search_btn_add': "Add", 'search_btn_close': "Close",
-        'err_invalid_invite': "You have entered an invalid or expired invite code!",
-        'err_freemium_limit': "You have reached your maximum server limit (1) on the free plan. Please upgrade.",
-        'err_401': "Session expired or invalid (401). Please log in again.",
-        'no_servers': "📌 No servers yet",
-        'cat_text': "💬 TEXT CHANNELS", 'cat_board': "📋 BOARD CHANNELS",
-        'chat_ph': "Type your message...", 'btn_send': "Send",
-        'tip_mic': "Toggle Microphone", 'tip_deaf': "Toggle Audio",
-        'home_btn': "Home", 'friends_title': "👥 Friends", 'friends_online': "Online", 'friends_all': "All",
-        'friends_search': "Search Friends...", 'friends_empty': "Your friends list is currently empty.", 'btn_search_friend': "🔍 Search Friend",
-        
-        # AYARLAR MODALI ÇEVİRİLERİ
-        'set_cat_personal': "👤 Personal Settings", 'set_cat_server': "🏢 Server Settings", 'set_cat_logout': "🚪 Logout",
-        'set_pers_title': "My Account", 'set_pers_name': "Username (Locked)", 'set_pers_email': "Email Address (Locked)",
-        'set_pers_save': "Save Changes", 'set_srv_title': "Server Settings (Global)", 'set_srv_desc': "Configure global settings for the servers you manage here.",
-        'set_avatar_btn': "Upload Photo",
-        'set_acc_title': "Account Information",
-        'set_acc_type': "Account Type: Standard",
-        'set_acc_limit': "Server Limit: 1",
-        'set_acc_upgrade': "🚀 Upgrade to Enterprise ($9.99/Month)",
-        'set_pass_title': "Change Password",
-        'set_pass_old': "Current Password",
-        'set_pass_new': "New Password",
-        'set_pass_rep': "Repeat New Password"
-    },
-    'GER': {
-        'logo': "☁️ MySaaS Workspace", 'menu_title': "MEINE SERVER",
-        'status_online': "🟢", 'status_offline': "⚫", 'logout_tip': "Einstellungen",
-        'theme_dark': "🌙 Dunkel", 'theme_light': "☀️ Hell",
-        'select_title': "Wählen Sie Ihr Arbeitsmodell", 'select_sub': "Beginnen Sie mit der Auswahl des Plans.",
-        'std_card_title': "Standardbenutzer", 'std_card_desc': "Grundlegende Funktionen für Einzelpersonen (1 Server-Limit).", 'btn_continue': "Kostenlos fortfahren",
-        'ent_card_title': "Enterprise (Premium)", 'ent_card_desc': "Unbegrenzter Zugang und erweiterte Funktionen für Teams.", 'btn_examine': "Paket ansehen",
-        'welcome_title': "Willkommen bei MySaaS!", 'welcome_sub': "Wählen Sie eine der untenstehenden Optionen, um zu beginnen.",
-        'card_create_title': "Server erstellen", 'card_create_desc': "Richten Sie Ihre eigene Community oder Ihren Arbeitsbereich ein.", 'card_create_btn': "Erstellen",
-        'card_join_title': "Server beitreten", 'card_join_desc': "Treten Sie einem Server mit einem Einladungslink bei.", 'card_join_btn': "Beitreten",
-        'card_friend_title': "Freund hinzufügen", 'card_friend_desc': "Fügen Sie Freunde hinzu, um Direktnachrichten zu senden.", 'card_friend_btn': "Hinzufügen",
-        'ent_pay_title': "Enterprise-Paket Details", 'ent_pay_price': "$9.99 / Monat",
-        'ent_f1': "★ Unbegrenzte Server und Arbeitsbereiche", 'ent_f2': "★ Erweiterter Video- & Voice-Chat",
-        'ent_f3': "★ Unbegrenzte Datei-Upload-Kapazität", 'ent_f4': "★ 24/7 Priority Technischer Support",
-        'btn_pay': "💳 Bezahlen", 'btn_back': "⬅ Zurück",
-        'setup_title': "Server-Setup & Einstellungen", 'setup_sub': "Geben Sie Ihrem neuen Arbeitsbereich einen Namen und beginnen Sie.",
-        'setup_btn_icon': "📷 Server-Symbol hochladen (Optional)", 'setup_ph': "Servername (z.B. Projekt X)", 
-        'setup_btn_create': "🚀 Server erstellen", 'setup_btn_cancel': "Abbrechen",
-        'dlg_join_title': "Einem Server beitreten", 'dlg_join_sub': "Geben Sie unten einen Einladungscode oder -link ein.",
-        'dlg_join_ph': "Einladungscode oder URL", 'dlg_btn_cancel': "Abbrechen",
-        'search_title': "Freunde finden & hinzufügen", 'search_sub': "Suchen Sie nach Freunden anhand ihres Benutzernamens oder E-Mail.",
-        'search_ph': "Benutzername oder E-Mail...", 'search_no_result': "Keine Benutzer gefunden.", 'search_btn_add': "Hinzufügen", 'search_btn_close': "Schließen",
-        'err_invalid_invite': "Sie haben einen ungültigen Einladungscode eingegeben!",
-        'err_freemium_limit': "Sie haben das maximale Serverlimit erreicht. Bitte upgraden Sie auf Enterprise.",
-        'err_401': "Sitzung abgelaufen oder ungültig (401). Bitte loggen Sie sich erneut ein.",
-        'no_servers': "📌 Noch keine Server",
-        'cat_text': "💬 TEXTKANÄLE", 'cat_board': "📋 BOARD-KANÄLE",
-        'chat_ph': "Nachricht eingeben...", 'btn_send': "Senden",
-        'tip_mic': "Mikrofon umschalten", 'tip_deaf': "Audio umschalten",
-        'home_btn': "Startseite", 'friends_title': "👥 Freunde", 'friends_online': "Online", 'friends_all': "Alle",
-        'friends_search': "Freunde suchen...", 'friends_empty': "Ihre Freundesliste ist derzeit leer.", 'btn_search_friend': "🔍 Freunde suchen",
-        
-        # AYARLAR MODALI ÇEVİRİLERİ
-        'set_cat_personal': "👤 Persönliche Einstellungen", 'set_cat_server': "🏢 Servereinstellungen", 'set_cat_logout': "🚪 Abmelden",
-        'set_pers_title': "Mein Konto", 'set_pers_name': "Benutzername", 'set_pers_email': "E-Mail-Adresse",
-        'set_pers_save': "Änderungen speichern", 'set_srv_title': "Servereinstellungen (Global)", 'set_srv_desc': "Konfigurieren Sie hier die globalen Einstellungen für die von Ihnen verwalteten Server.",
-        'set_avatar_btn': "Foto hochladen",
-        'set_acc_title': "Kontoinformationen",
-        'set_acc_type': "Kontotyp: Standard",
-        'set_acc_limit': "Serverlimit: 1",
-        'set_acc_upgrade': "🚀 Auf Enterprise upgraden ($9.99/Monat)",
-        'set_pass_title': "Passwort ändern",
-        'set_pass_old': "Aktuelles Passwort",
-        'set_pass_new': "Neues Passwort",
-        'set_pass_rep': "Neues Passwort (Wiederholen)"
-    }
-}
+# YENİ: Dil dosyasını harici dosyadan çekiyoruz
+from ui.resources.languages import DASHBOARD_LANGS
 
 def get_api_headers():
     settings = QSettings("MySaaS", "DesktopClient")
@@ -159,15 +21,18 @@ def get_api_headers():
     if not token_str or token_str == "None": return {"Authorization": ""}
     return {"Authorization": token_str}
 
+# ... (API THREADLERİ AYNI KALACAK, SADECE CSS KISMI DEĞİŞTİ) ...
+# (Kodun çok uzun olmaması için API Thread'lerini yukarıdaki gibi varsayıyorum, 
+#  fakat CSS'i aşağıda KOMPLE veriyorum, lütfen eskisiyle değiştirin)
+
 # ==========================================
-# C++ API İŞ PARÇACIKLARI
+# GÜNCELLENMİŞ API THREADLERİ (BURAYI KOPYALAYIN)
 # ==========================================
 class ApiFetchProfileThread(QThread):
     finished_signal = Signal(bool, dict) 
     def run(self):
         try:
-            url = "http://localhost:8080/api/users/me" 
-            response = requests.get(url, headers=get_api_headers(), timeout=5)
+            response = requests.get("http://localhost:8080/api/users/me", headers=get_api_headers(), timeout=5)
             if response.status_code == 200: self.finished_signal.emit(True, response.json()) 
             else: self.finished_signal.emit(False, {})
         except: self.finished_signal.emit(False, {})
@@ -179,32 +44,42 @@ class ApiCreateServerThread(QThread):
     def run(self):
         try:
             headers = get_api_headers()
-            url_server = "http://localhost:8080/api/servers" 
-            res_server = requests.post(url_server, json={"name": self.server_name}, headers=headers, timeout=5)
+            res_server = requests.post("http://localhost:8080/api/servers", json={"name": self.server_name}, headers=headers, timeout=5)
+            
             if res_server.status_code not in [200, 201]:
                 if res_server.status_code == 401: self.finished_signal.emit(False, "", "UNAUTHORIZED")
                 elif res_server.status_code == 403: self.finished_signal.emit(False, "", "LIMIT_EXCEEDED")
                 else: self.finished_signal.emit(False, f"Hata: {res_server.status_code}", "GENERAL")
                 return
-            server_data = res_server.json()
-            server_id = server_data.get("id") or server_data.get("server_id")
+            
+            # JSON GÜVENLİK KONTROLÜ
+            server_id = None
+            if res_server.text.strip():
+                try:
+                    server_data = res_server.json()
+                    server_id = server_data.get("id") or server_data.get("server_id")
+                except ValueError: pass
+
             if not server_id:
-                self.finished_signal.emit(True, f"'{self.server_name}' başarıyla oluşturuldu!", "NONE")
+                self.finished_signal.emit(True, f"'{self.server_name}' oluşturuldu!", "NONE")
                 return
 
             url_channel = f"http://localhost:8080/api/servers/{server_id}/channels"
             requests.post(url_channel, json={"name": "genel-sohbet", "type": 0}, headers=headers, timeout=3)
             res_kanban = requests.post(url_channel, json={"name": "Proje Panosu", "type": 3}, headers=headers, timeout=3)
-            if res_kanban.status_code in [200, 201]:
-                kanban_id = res_kanban.json().get("id") or res_kanban.json().get("channel_id")
-                if kanban_id:
-                    url_lists = f"http://localhost:8080/api/boards/{kanban_id}/lists"
-                    requests.post(url_lists, json={"title": "📋 Yapılacaklar"}, headers=headers, timeout=3)
-                    requests.post(url_lists, json={"title": "⏳ Devam Edenler"}, headers=headers, timeout=3)
-                    requests.post(url_lists, json={"title": "✅ Tamamlananlar"}, headers=headers, timeout=3)
+            
+            if res_kanban.status_code in [200, 201] and res_kanban.text.strip():
+                try:
+                    kanban_id = res_kanban.json().get("id") or res_kanban.json().get("channel_id")
+                    if kanban_id:
+                        url_lists = f"http://localhost:8080/api/boards/{kanban_id}/lists"
+                        requests.post(url_lists, json={"title": "📋 Yapılacaklar"}, headers=headers, timeout=3)
+                        requests.post(url_lists, json={"title": "⏳ Devam Edenler"}, headers=headers, timeout=3)
+                        requests.post(url_lists, json={"title": "✅ Tamamlananlar"}, headers=headers, timeout=3)
+                except ValueError: pass
+                    
             self.finished_signal.emit(True, f"'{self.server_name}' çalışma alanı hazır!", "NONE")
-        except Exception as e:
-            self.finished_signal.emit(False, f"Bağlantı koptu: {e}", "GENERAL")
+        except Exception as e: self.finished_signal.emit(False, f"Bağlantı koptu: {e}", "GENERAL")
 
 class ApiFetchMyServersThread(QThread):
     finished_signal = Signal(bool, list, str) 
@@ -251,10 +126,11 @@ class ApiAddFriendThread(QThread):
             else: self.finished_signal.emit(False, f"Reddedildi ({response.status_code})")
         except: self.finished_signal.emit(False, "Bağlantı hatası.")
 
+# ==========================================
+# DIALOG VE DASHBOARD SINIFLARI (AYNI, SADECE CSS VE IMPORT GÜNCELLENDİ)
+# ==========================================
+# (Dialog sınıfları aynı kalıyor, DashboardView apply_theme fonksiyonu aşağıda kökten değiştirildi)
 
-# ==========================================
-# POP-UP (DIALOG) PENCERELERİ 
-# ==========================================
 class CustomDialog(QDialog):
     def __init__(self, parent, is_dark_mode, title, sub_text, ph_text, btn_ok_text, btn_cancel_text):
         super().__init__(parent); self.setWindowTitle(title); self.setFixedSize(480, 260) 
@@ -275,11 +151,30 @@ class CustomDialog(QDialog):
 
     def apply_theme(self, is_dark_mode):
         if is_dark_mode:
-            self.bg_frame.setStyleSheet("QFrame#dialog_bg { background-color: #313338; border-radius: 12px; border: 1px solid #5865f2; } QLabel#dialog_title { color: #ffffff; font-size: 22px; font-weight: 800; } QLabel#dialog_sub { color: #b5bac1; font-size: 14px; } QLineEdit { background-color: #1e1f22; border: 1px solid #444; border-radius: 8px; padding: 0 15px; font-size: 14px; color: #ffffff; } QLineEdit:focus { border: 1px solid #5865f2; } QPushButton#dialog_btn_cancel { background-color: transparent; color: #f0f2f5; font-size: 14px; font-weight: bold; border-radius: 6px; border: none; } QPushButton#dialog_btn_cancel:hover { text-decoration: underline; } QPushButton#dialog_btn_ok { background-color: #5865f2; color: white; font-size: 14px; font-weight: bold; border-radius: 6px; border: none; }")
+            self.bg_frame.setStyleSheet("""
+                QFrame#dialog_bg { background-color: #313338; border-radius: 12px; border: 1px solid #1e1f22; }
+                QLabel#dialog_title { color: #ffffff; font-size: 22px; font-weight: 800; }
+                QLabel#dialog_sub { color: #b5bac1; font-size: 14px; }
+                QLineEdit { background-color: #1e1f22; border: 1px solid #1e1f22; border-radius: 8px; padding: 0 15px; font-size: 14px; color: #dbdee1; }
+                QLineEdit:focus { border: 1px solid #5865f2; }
+                QPushButton#dialog_btn_cancel { background-color: transparent; color: #b5bac1; font-size: 14px; font-weight: bold; border-radius: 6px; border: none; }
+                QPushButton#dialog_btn_cancel:hover { color: #ffffff; text-decoration: underline; }
+                QPushButton#dialog_btn_ok { background-color: #5865f2; color: white; font-size: 14px; font-weight: bold; border-radius: 6px; border: none; }
+                QPushButton#dialog_btn_ok:hover { background-color: #4752c4; }
+            """)
         else:
-            self.bg_frame.setStyleSheet("QFrame#dialog_bg { background-color: #ffffff; border-radius: 12px; border: 1px solid #1877f2; } QLabel#dialog_title { color: #060607; font-size: 22px; font-weight: 800; } QLabel#dialog_sub { color: #4e5058; font-size: 14px; } QLineEdit { background-color: #f2f3f5; border: 1px solid #ccc; border-radius: 8px; padding: 0 15px; font-size: 14px; color: #060607; } QLineEdit:focus { border: 1px solid #1877f2; background-color: #ffffff; } QPushButton#dialog_btn_cancel { background-color: transparent; color: #4e5058; font-size: 14px; font-weight: bold; border-radius: 6px; border: none; } QPushButton#dialog_btn_cancel:hover { text-decoration: underline; } QPushButton#dialog_btn_ok { background-color: #1877f2; color: white; font-size: 14px; font-weight: bold; border-radius: 6px; border: none; }")
+            self.bg_frame.setStyleSheet("""
+                QFrame#dialog_bg { background-color: #ffffff; border-radius: 12px; border: 1px solid #e3e5e8; }
+                QLabel#dialog_title { color: #060607; font-size: 22px; font-weight: 800; }
+                QLabel#dialog_sub { color: #4e5058; font-size: 14px; }
+                QLineEdit { background-color: #f2f3f5; border: 1px solid #ccc; border-radius: 8px; padding: 0 15px; font-size: 14px; color: #060607; }
+                QLineEdit:focus { border: 1px solid #1877f2; background-color: #ffffff; }
+                QPushButton#dialog_btn_cancel { background-color: transparent; color: #4e5058; font-size: 14px; font-weight: bold; border-radius: 6px; border: none; }
+                QPushButton#dialog_btn_cancel:hover { text-decoration: underline; }
+                QPushButton#dialog_btn_ok { background-color: #1877f2; color: white; font-size: 14px; font-weight: bold; border-radius: 6px; border: none; }
+                QPushButton#dialog_btn_ok:hover { background-color: #166fe5; }
+            """)
     def get_input_text(self): return self.input_field.text().strip()
-
 
 class AddFriendDialog(QDialog):
     def __init__(self, parent, is_dark_mode, lang_dict):
@@ -342,14 +237,39 @@ class AddFriendDialog(QDialog):
 
     def apply_theme(self, is_dark_mode):
         if is_dark_mode:
-            self.bg_frame.setStyleSheet("QFrame#dialog_bg { background-color: #313338; border-radius: 12px; border: 1px solid #5865f2; } QLabel#dialog_title { color: #ffffff; font-size: 20px; font-weight: 800; } QLabel#dialog_sub { color: #b5bac1; font-size: 13px; } QLineEdit { background-color: #1e1f22; border: 1px solid #444; border-radius: 8px; padding: 0 15px; font-size: 14px; color: #ffffff; } QLineEdit:focus { border: 1px solid #5865f2; } QListWidget#result_list { background-color: transparent; border: none; outline: none; color: #949ba4;} QListWidget#result_list::item { background-color: #1e1f22; border-radius: 8px; margin-bottom: 5px; } QListWidget#result_list::item:hover { background-color: #35393f; } QLabel#row_email { color: #949ba4; font-size: 11px; } QPushButton#dialog_btn_cancel { background-color: transparent; color: #f0f2f5; font-size: 14px; font-weight: bold; border-radius: 6px; padding: 10px; border: 1px solid #444; } QPushButton#dialog_btn_ok { background-color: #5865f2; color: white; font-size: 13px; font-weight: bold; border-radius: 6px; padding: 8px; border: none; }")
+            self.bg_frame.setStyleSheet("""
+                QFrame#dialog_bg { background-color: #313338; border-radius: 12px; border: 1px solid #1e1f22; }
+                QLabel#dialog_title { color: #ffffff; font-size: 20px; font-weight: 800; }
+                QLabel#dialog_sub { color: #b5bac1; font-size: 13px; }
+                QLineEdit { background-color: #1e1f22; border: 1px solid #1e1f22; border-radius: 8px; padding: 0 15px; font-size: 14px; color: #dbdee1; }
+                QLineEdit:focus { border: 1px solid #5865f2; }
+                QListWidget#result_list { background-color: transparent; border: none; outline: none; color: #dbdee1;}
+                QListWidget#result_list::item { background-color: #2b2d31; border-radius: 8px; margin-bottom: 5px; }
+                QListWidget#result_list::item:hover { background-color: #35393f; }
+                QLabel#row_email { color: #b5bac1; font-size: 11px; }
+                QPushButton#dialog_btn_cancel { background-color: transparent; color: #b5bac1; font-size: 14px; font-weight: bold; border-radius: 6px; padding: 10px; border: none; }
+                QPushButton#dialog_btn_cancel:hover { color: #ffffff; text-decoration: underline; }
+                QPushButton#dialog_btn_ok { background-color: #5865f2; color: white; font-size: 13px; font-weight: bold; border-radius: 6px; padding: 8px; border: none; }
+                QPushButton#dialog_btn_ok:hover { background-color: #4752c4; }
+            """)
         else:
-            self.bg_frame.setStyleSheet("QFrame#dialog_bg { background-color: #ffffff; border-radius: 12px; border: 1px solid #1877f2; } QLabel#dialog_title { color: #060607; font-size: 20px; font-weight: 800; } QLabel#dialog_sub { color: #4e5058; font-size: 13px; } QLineEdit { background-color: #f2f3f5; border: 1px solid #ccc; border-radius: 8px; padding: 0 15px; font-size: 14px; color: #060607; } QLineEdit:focus { border: 1px solid #1877f2; background-color: #ffffff; } QListWidget#result_list { background-color: transparent; border: none; outline: none; color: #5c5e66;} QListWidget#result_list::item { background-color: #f8f9fa; border: 1px solid #e3e5e8; border-radius: 8px; margin-bottom: 5px; } QListWidget#result_list::item:hover { background-color: #f2f3f5; } QLabel#row_email { color: #5c5e66; font-size: 11px; } QPushButton#dialog_btn_cancel { background-color: transparent; color: #4e5058; font-size: 14px; font-weight: bold; border-radius: 6px; padding: 10px; border: 1px solid #ccc; } QPushButton#dialog_btn_ok { background-color: #1877f2; color: white; font-size: 13px; font-weight: bold; border-radius: 6px; padding: 8px; border: none; }")
+            self.bg_frame.setStyleSheet("""
+                QFrame#dialog_bg { background-color: #ffffff; border-radius: 12px; border: 1px solid #e3e5e8; }
+                QLabel#dialog_title { color: #060607; font-size: 20px; font-weight: 800; }
+                QLabel#dialog_sub { color: #4e5058; font-size: 13px; }
+                QLineEdit { background-color: #f2f3f5; border: 1px solid #ccc; border-radius: 8px; padding: 0 15px; font-size: 14px; color: #060607; }
+                QLineEdit:focus { border: 1px solid #1877f2; background-color: #ffffff; }
+                QListWidget#result_list { background-color: transparent; border: none; outline: none; color: #5c5e66;}
+                QListWidget#result_list::item { background-color: #f8f9fa; border: 1px solid #e3e5e8; border-radius: 8px; margin-bottom: 5px; }
+                QListWidget#result_list::item:hover { background-color: #f2f3f5; }
+                QLabel#row_email { color: #5c5e66; font-size: 11px; }
+                QPushButton#dialog_btn_cancel { background-color: transparent; color: #4e5058; font-size: 14px; font-weight: bold; border-radius: 6px; padding: 10px; border: none; }
+                QPushButton#dialog_btn_cancel:hover { text-decoration: underline; }
+                QPushButton#dialog_btn_ok { background-color: #1877f2; color: white; font-size: 13px; font-weight: bold; border-radius: 6px; padding: 8px; border: none; }
+                QPushButton#dialog_btn_ok:hover { background-color: #166fe5; }
+            """)
 
 
-# ==========================================
-# YENİ: GENİŞ VE DETAYLI AYARLAR MODALI
-# ==========================================
 class SettingsDialog(QDialog):
     def __init__(self, parent, is_dark_mode, lang_dict):
         super().__init__(parent)
@@ -357,210 +277,86 @@ class SettingsDialog(QDialog):
         self.lang = lang_dict
         self.is_dark_mode = is_dark_mode
         self.setWindowTitle(self.lang['set_pers_title'])
-        self.setFixedSize(850, 650) # Alan dar gelmesin diye büyütüldü
+        self.setFixedSize(850, 650) 
         self.setWindowFlags(Qt.Dialog | Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
-
         self.setup_ui()
         self.apply_theme()
 
     def setup_ui(self):
-        self.bg_frame = QFrame(self)
-        self.bg_frame.setGeometry(0, 0, 850, 650)
-        self.bg_frame.setObjectName("dialog_bg")
+        self.bg_frame = QFrame(self); self.bg_frame.setGeometry(0, 0, 850, 650); self.bg_frame.setObjectName("dialog_bg")
+        shadow = QGraphicsDropShadowEffect(self); shadow.setBlurRadius(25); shadow.setXOffset(0); shadow.setYOffset(5)
+        shadow.setColor(QColor(0, 0, 0, 180 if self.is_dark_mode else 80)); self.bg_frame.setGraphicsEffect(shadow)
+        main_layout = QHBoxLayout(self.bg_frame); main_layout.setContentsMargins(0, 0, 0, 0); main_layout.setSpacing(0)
 
-        shadow = QGraphicsDropShadowEffect(self)
-        shadow.setBlurRadius(25); shadow.setXOffset(0); shadow.setYOffset(5)
-        shadow.setColor(QColor(0, 0, 0, 180 if self.is_dark_mode else 80))
-        self.bg_frame.setGraphicsEffect(shadow)
-
-        main_layout = QHBoxLayout(self.bg_frame)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
-
-        # --- SOL MENÜ ---
-        self.sidebar = QFrame()
-        self.sidebar.setObjectName("settings_sidebar")
-        self.sidebar.setFixedWidth(240)
-        sb_layout = QVBoxLayout(self.sidebar)
-        sb_layout.setContentsMargins(15, 30, 15, 15)
-
-        self.menu_list = QListWidget()
-        self.menu_list.setObjectName("settings_list")
-        self.menu_list.addItem(self.lang['set_cat_personal'])
-        self.menu_list.addItem(self.lang['set_cat_server'])
-        
-        logout_item = QListWidgetItem(self.lang['set_cat_logout'])
-        logout_item.setForeground(QColor("#ed4245")) 
-        self.menu_list.addItem(logout_item)
-        self.menu_list.currentRowChanged.connect(self.on_menu_changed)
+        self.sidebar = QFrame(); self.sidebar.setObjectName("settings_sidebar"); self.sidebar.setFixedWidth(240)
+        sb_layout = QVBoxLayout(self.sidebar); sb_layout.setContentsMargins(15, 30, 15, 15)
+        self.menu_list = QListWidget(); self.menu_list.setObjectName("settings_list")
+        self.menu_list.addItem(self.lang['set_cat_personal']); self.menu_list.addItem(self.lang['set_cat_server'])
+        logout_item = QListWidgetItem(self.lang['set_cat_logout']); logout_item.setForeground(QColor("#ed4245")) 
+        self.menu_list.addItem(logout_item); self.menu_list.currentRowChanged.connect(self.on_menu_changed)
         sb_layout.addWidget(self.menu_list)
 
-        # --- SAĞ İÇERİK ---
-        self.content_area = QFrame()
-        self.content_area.setObjectName("settings_content")
-        content_layout = QVBoxLayout(self.content_area)
-        content_layout.setContentsMargins(40, 20, 40, 40)
-
+        self.content_area = QFrame(); self.content_area.setObjectName("settings_content")
+        content_layout = QVBoxLayout(self.content_area); content_layout.setContentsMargins(40, 20, 40, 40)
         top_bar = QHBoxLayout()
-        self.btn_close = QPushButton("✖")
-        self.btn_close.setObjectName("settings_close_btn")
-        self.btn_close.setFixedSize(36, 36)
-        self.btn_close.setCursor(Qt.PointingHandCursor)
-        self.btn_close.clicked.connect(self.reject) 
-        top_bar.addStretch()
-        top_bar.addWidget(self.btn_close)
+        self.btn_close = QPushButton("✖"); self.btn_close.setObjectName("settings_close_btn")
+        self.btn_close.setFixedSize(36, 36); self.btn_close.setCursor(Qt.PointingHandCursor); self.btn_close.clicked.connect(self.reject) 
+        top_bar.addStretch(); top_bar.addWidget(self.btn_close)
 
         self.stacked = QStackedWidget()
-
-        # ==========================================
-        # 1. KİŞİSEL AYARLAR (HESABIM) SAYFASI 
-        # ==========================================
-        # Kaydırma (Scroll) Alanı oluşturuyoruz ki içerik taşmasın
-        self.scroll_area = QScrollArea()
-        self.scroll_area.setWidgetResizable(True)
-        self.scroll_area.setObjectName("settings_scroll")
+        self.scroll_area = QScrollArea(); self.scroll_area.setWidgetResizable(True); self.scroll_area.setObjectName("settings_scroll")
         
-        self.page_personal = QWidget()
-        p_layout = QVBoxLayout(self.page_personal)
-        p_layout.setAlignment(Qt.AlignTop)
-        p_layout.setSpacing(20)
-        
-        lbl_p_title = QLabel(self.lang['set_pers_title'])
-        lbl_p_title.setObjectName("settings_title")
-        p_layout.addWidget(lbl_p_title)
+        self.page_personal = QWidget(); p_layout = QVBoxLayout(self.page_personal); p_layout.setAlignment(Qt.AlignTop); p_layout.setSpacing(20)
+        lbl_p_title = QLabel(self.lang['set_pers_title']); lbl_p_title.setObjectName("settings_title"); p_layout.addWidget(lbl_p_title)
 
-        # --- PROFİL FOTOĞRAFI ALANI ---
         avatar_layout = QHBoxLayout()
-        self.set_avatar = QLabel("👤")
-        self.set_avatar.setObjectName("big_avatar")
-        self.set_avatar.setFixedSize(80, 80)
-        self.set_avatar.setAlignment(Qt.AlignCenter)
-        
-        btn_upload_avatar = QPushButton(self.lang['set_avatar_btn'])
-        btn_upload_avatar.setObjectName("secondary_btn")
-        btn_upload_avatar.setFixedSize(150, 40)
-        btn_upload_avatar.setCursor(Qt.PointingHandCursor)
-        btn_upload_avatar.clicked.connect(lambda: QMessageBox.information(self, "Bilgi", "Fotoğraf yükleme (C++ Multipart API) entegrasyonu yakında."))
-        
-        avatar_layout.addWidget(self.set_avatar)
-        avatar_layout.addSpacing(15)
-        avatar_layout.addWidget(btn_upload_avatar)
-        avatar_layout.addStretch()
+        self.set_avatar = QLabel("👤"); self.set_avatar.setObjectName("big_avatar"); self.set_avatar.setFixedSize(80, 80); self.set_avatar.setAlignment(Qt.AlignCenter)
+        btn_upload_avatar = QPushButton(self.lang['set_avatar_btn']); btn_upload_avatar.setObjectName("secondary_btn")
+        btn_upload_avatar.setFixedSize(150, 40); btn_upload_avatar.setCursor(Qt.PointingHandCursor)
+        btn_upload_avatar.clicked.connect(lambda: QMessageBox.information(self, "Bilgi", "Fotoğraf yükleme yakında eklenecektir."))
+        avatar_layout.addWidget(self.set_avatar); avatar_layout.addSpacing(15); avatar_layout.addWidget(btn_upload_avatar); avatar_layout.addStretch()
         p_layout.addLayout(avatar_layout)
 
-        # --- KULLANICI BİLGİLERİ (KİLİTLİ) ---
-        lbl_name_hint = QLabel(self.lang['set_pers_name'])
-        lbl_name_hint.setObjectName("bold_label")
-        self.inp_name = QLineEdit()
-        self.inp_name.setMinimumHeight(45)
-        self.inp_name.setText(self.parent_dashboard.lbl_username.text())
-        self.inp_name.setReadOnly(True) # YENİ: Kilitlendi
-        
-        lbl_email_hint = QLabel(self.lang['set_pers_email'])
-        lbl_email_hint.setObjectName("bold_label")
-        self.inp_email = QLineEdit()
-        self.inp_email.setMinimumHeight(45)
-        self.inp_email.setText(self.parent_dashboard.lbl_email.text())
-        self.inp_email.setReadOnly(True) # YENİ: Kilitlendi
-        
-        p_layout.addWidget(lbl_name_hint); p_layout.addWidget(self.inp_name)
-        p_layout.addWidget(lbl_email_hint); p_layout.addWidget(self.inp_email)
+        lbl_name_hint = QLabel(self.lang['set_pers_name']); lbl_name_hint.setObjectName("bold_label")
+        self.inp_name = QLineEdit(); self.inp_name.setMinimumHeight(45); self.inp_name.setText(self.parent_dashboard.lbl_username.text()); self.inp_name.setReadOnly(True) 
+        lbl_email_hint = QLabel(self.lang['set_pers_email']); lbl_email_hint.setObjectName("bold_label")
+        self.inp_email = QLineEdit(); self.inp_email.setMinimumHeight(45); self.inp_email.setText(self.parent_dashboard.lbl_email.text()); self.inp_email.setReadOnly(True) 
+        p_layout.addWidget(lbl_name_hint); p_layout.addWidget(self.inp_name); p_layout.addWidget(lbl_email_hint); p_layout.addWidget(self.inp_email)
 
-        # --- HESAP BİLGİLERİ VE UPSELL (YÜKSELTME) KUTUSU ---
-        self.acc_box = QFrame()
-        self.acc_box.setObjectName("account_box")
-        acc_box_layout = QVBoxLayout(self.acc_box)
-        
-        lbl_acc_box_title = QLabel(self.lang['set_acc_title'])
-        lbl_acc_box_title.setObjectName("bold_label")
-        
-        lbl_acc_type = QLabel(self.lang['set_acc_type'])
-        lbl_acc_type.setStyleSheet("font-size: 14px;")
-        
-        lbl_acc_limit = QLabel(self.lang['set_acc_limit'])
-        lbl_acc_limit.setStyleSheet("font-size: 14px;")
-        
-        self.btn_upgrade = QPushButton(self.lang['set_acc_upgrade'])
-        self.btn_upgrade.setObjectName("upgrade_btn")
-        self.btn_upgrade.setCursor(Qt.PointingHandCursor)
+        self.acc_box = QFrame(); self.acc_box.setObjectName("account_box"); acc_box_layout = QVBoxLayout(self.acc_box)
+        lbl_acc_box_title = QLabel(self.lang['set_acc_title']); lbl_acc_box_title.setObjectName("bold_label")
+        lbl_acc_type = QLabel(self.lang['set_acc_type']); lbl_acc_type.setStyleSheet("font-size: 14px;")
+        lbl_acc_limit = QLabel(self.lang['set_acc_limit']); lbl_acc_limit.setStyleSheet("font-size: 14px;")
+        self.btn_upgrade = QPushButton(self.lang['set_acc_upgrade']); self.btn_upgrade.setObjectName("upgrade_btn"); self.btn_upgrade.setCursor(Qt.PointingHandCursor)
         self.btn_upgrade.clicked.connect(lambda: webbrowser.open("https://sizin-odeme-linkiniz.com"))
-        
-        acc_box_layout.addWidget(lbl_acc_box_title)
-        acc_box_layout.addWidget(lbl_acc_type)
-        acc_box_layout.addWidget(lbl_acc_limit)
-        acc_box_layout.addSpacing(10)
-        acc_box_layout.addWidget(self.btn_upgrade)
-        
+        acc_box_layout.addWidget(lbl_acc_box_title); acc_box_layout.addWidget(lbl_acc_type); acc_box_layout.addWidget(lbl_acc_limit); acc_box_layout.addSpacing(10); acc_box_layout.addWidget(self.btn_upgrade)
         p_layout.addWidget(self.acc_box)
 
-        # --- ŞİFRE DEĞİŞTİRME ALANI ---
-        lbl_pass_title = QLabel(self.lang['set_pass_title'])
-        lbl_pass_title.setObjectName("settings_title")
-        p_layout.addWidget(lbl_pass_title)
+        lbl_pass_title = QLabel(self.lang['set_pass_title']); lbl_pass_title.setObjectName("settings_title"); p_layout.addWidget(lbl_pass_title)
+        self.inp_old_pass = QLineEdit(); self.inp_old_pass.setPlaceholderText(self.lang['set_pass_old']); self.inp_old_pass.setMinimumHeight(45); self.inp_old_pass.setEchoMode(QLineEdit.Password)
+        self.inp_new_pass = QLineEdit(); self.inp_new_pass.setPlaceholderText(self.lang['set_pass_new']); self.inp_new_pass.setMinimumHeight(45); self.inp_new_pass.setEchoMode(QLineEdit.Password)
+        self.inp_new_pass_rep = QLineEdit(); self.inp_new_pass_rep.setPlaceholderText(self.lang['set_pass_rep']); self.inp_new_pass_rep.setMinimumHeight(45); self.inp_new_pass_rep.setEchoMode(QLineEdit.Password)
+        p_layout.addWidget(self.inp_old_pass); p_layout.addWidget(self.inp_new_pass); p_layout.addWidget(self.inp_new_pass_rep)
 
-        self.inp_old_pass = QLineEdit()
-        self.inp_old_pass.setPlaceholderText(self.lang['set_pass_old'])
-        self.inp_old_pass.setMinimumHeight(45)
-        self.inp_old_pass.setEchoMode(QLineEdit.Password)
-        
-        self.inp_new_pass = QLineEdit()
-        self.inp_new_pass.setPlaceholderText(self.lang['set_pass_new'])
-        self.inp_new_pass.setMinimumHeight(45)
-        self.inp_new_pass.setEchoMode(QLineEdit.Password)
-        
-        self.inp_new_pass_rep = QLineEdit()
-        self.inp_new_pass_rep.setPlaceholderText(self.lang['set_pass_rep'])
-        self.inp_new_pass_rep.setMinimumHeight(45)
-        self.inp_new_pass_rep.setEchoMode(QLineEdit.Password)
-        
-        p_layout.addWidget(self.inp_old_pass)
-        p_layout.addWidget(self.inp_new_pass)
-        p_layout.addWidget(self.inp_new_pass_rep)
-
-        btn_save_p = QPushButton(self.lang['set_pers_save'])
-        btn_save_p.setObjectName("primary_btn")
-        btn_save_p.setFixedSize(200, 45)
-        btn_save_p.setCursor(Qt.PointingHandCursor)
-        btn_save_p.clicked.connect(lambda: QMessageBox.information(self, "Bilgi", "Ayarlar kaydedildi! (C++ API Bağlantısı Hazırlanıyor)"))
-        
-        p_layout.addSpacing(20)
-        p_layout.addWidget(btn_save_p)
-        
+        btn_save_p = QPushButton(self.lang['set_pers_save']); btn_save_p.setObjectName("primary_btn"); btn_save_p.setFixedSize(200, 45); btn_save_p.setCursor(Qt.PointingHandCursor)
+        p_layout.addSpacing(20); p_layout.addWidget(btn_save_p)
         self.scroll_area.setWidget(self.page_personal)
 
+        self.page_server = QWidget(); s_layout = QVBoxLayout(self.page_server); s_layout.setAlignment(Qt.AlignTop)
+        lbl_s_title = QLabel(self.lang['set_srv_title']); lbl_s_title.setObjectName("settings_title")
+        lbl_s_desc = QLabel(self.lang['set_srv_desc']); lbl_s_desc.setObjectName("desc_label")
+        s_layout.addWidget(lbl_s_title); s_layout.addWidget(lbl_s_desc)
 
-        # ==========================================
-        # 2. SUNUCU AYARLARI SAYFASI
-        # ==========================================
-        self.page_server = QWidget()
-        s_layout = QVBoxLayout(self.page_server)
-        s_layout.setAlignment(Qt.AlignTop)
-        lbl_s_title = QLabel(self.lang['set_srv_title'])
-        lbl_s_title.setObjectName("settings_title")
-        lbl_s_desc = QLabel(self.lang['set_srv_desc'])
-        lbl_s_desc.setObjectName("desc_label")
-        s_layout.addWidget(lbl_s_title)
-        s_layout.addWidget(lbl_s_desc)
-
-        self.stacked.addWidget(self.scroll_area) # Kişisel ayarlar scroll ile ekleniyor
-        self.stacked.addWidget(self.page_server)
-
-        content_layout.addLayout(top_bar)
-        content_layout.addWidget(self.stacked)
-
-        main_layout.addWidget(self.sidebar)
-        main_layout.addWidget(self.content_area)
-        
+        self.stacked.addWidget(self.scroll_area); self.stacked.addWidget(self.page_server)
+        content_layout.addLayout(top_bar); content_layout.addWidget(self.stacked)
+        main_layout.addWidget(self.sidebar); main_layout.addWidget(self.content_area)
         self.menu_list.setCurrentRow(0)
 
     def on_menu_changed(self, row):
-        if row == 0:
-            self.stacked.setCurrentIndex(0)
-        elif row == 1:
-            self.stacked.setCurrentIndex(1)
-        elif row == 2: 
-            self.done(2) 
+        if row == 0: self.stacked.setCurrentIndex(0)
+        elif row == 1: self.stacked.setCurrentIndex(1)
+        elif row == 2: self.done(2) 
 
     def apply_theme(self):
         if self.is_dark_mode:
@@ -578,7 +374,6 @@ class SettingsDialog(QDialog):
                 QLabel#desc_label { color: #949ba4; font-size: 13px; }
                 
                 QLabel#big_avatar { background-color: #5865f2; color: white; font-size: 36px; border-radius: 40px; }
-                
                 QPushButton#settings_close_btn { background-color: transparent; color: #949ba4; font-weight: bold; font-size: 20px; border: none; }
                 QPushButton#settings_close_btn:hover { color: #ffffff; }
                 
@@ -613,7 +408,6 @@ class SettingsDialog(QDialog):
                 QLabel#desc_label { color: #5c5e66; font-size: 13px; }
                 
                 QLabel#big_avatar { background-color: #1877f2; color: white; font-size: 36px; border-radius: 40px; }
-                
                 QPushButton#settings_close_btn { background-color: transparent; color: #5c5e66; font-weight: bold; font-size: 20px; border: none; }
                 QPushButton#settings_close_btn:hover { color: #060607; }
                 
@@ -622,9 +416,9 @@ class SettingsDialog(QDialog):
                 QLineEdit[readOnly="true"] { background-color: #e3e5e8; color: #5c5e66; border: 1px solid #ccc; }
                 
                 QPushButton#primary_btn { background-color: #1877f2; color: white; border-radius: 6px; padding: 12px; font-weight: bold; font-size: 14px; border: none; }
-                QPushButton#primary_btn:hover { background-color: #166fe5; }
+                QPushButton#primary_btn:hover {{ background-color: #166fe5; }}
                 QPushButton#secondary_btn { background-color: #f8f9fa; color: #4e5058; border: 1px solid #ccc; border-radius: 6px; padding: 10px; font-weight: bold; font-size: 13px; }
-                QPushButton#secondary_btn:hover { background-color: #e3e5e8; }
+                QPushButton#secondary_btn:hover {{ background-color: #e3e5e8; }}
                 
                 QFrame#account_box { background-color: #f8f9fa; border: 1px solid #e3e5e8; border-radius: 8px; }
                 QPushButton#upgrade_btn { background-color: #f1c40f; color: #000; font-weight: bold; border-radius: 6px; padding: 10px; font-size: 14px; border: none; }
@@ -641,6 +435,7 @@ class SettingsDialog(QDialog):
 class DashboardView(QWidget):
     def __init__(self, main_window):
         super().__init__()
+        self.setObjectName("dashboard_main") # CSS BUG FIX ICIN GEREKLI
         self.main_window = main_window
         self.settings = QSettings("MySaaS", "DesktopClient")
         self.is_dark_mode = self.settings.value("is_dark_mode", False, type=bool)
@@ -649,11 +444,9 @@ class DashboardView(QWidget):
         self.is_online = True 
         self.is_mic_on = True
         self.is_deafened = False
-        self.previous_page = None 
         
         self.setup_ui()
         self.sync_settings()
-        
         self.fetch_my_profile()
         self.fetch_my_servers()
 
@@ -744,7 +537,6 @@ class DashboardView(QWidget):
             if len(servers) == 0:
                 item = QListWidgetItem(t['no_servers']); item.setFont(QFont("Segoe UI", 10)); item.setFlags(Qt.NoItemFlags) 
                 self.server_list.addItem(item)
-                
                 if not self.settings.value("has_completed_onboarding", False, type=bool):
                     self.stacked_widget.setCurrentWidget(self.page_selection)
                 else:
@@ -792,12 +584,11 @@ class DashboardView(QWidget):
         self.channel_list.addItem(cat2)
         self.channel_list.addItem(QListWidgetItem("   📋 Proje Panosu"))
 
-    # ==================== AYARLAR MODALI GÖSTERİCİ ====================
     def show_settings_page(self):
         t = DASHBOARD_LANGS[self.current_lang]
         dialog = SettingsDialog(self, self.is_dark_mode, t)
         result = dialog.exec()
-        if result == 2: # Çıkış Yap işlemi
+        if result == 2: 
             self.settings.setValue("auth_token", "")
             self.settings.setValue("remember_me", False) 
             self.main_window.show_login()
@@ -842,13 +633,14 @@ class DashboardView(QWidget):
         header_layout.addWidget(self.btn_theme); header_layout.addWidget(self.lang_cb)
         content_layout.addWidget(self.header)
 
-        self.stacked_widget = QStackedWidget()
-        self.page_selection = self.create_selection_page()
-        self.page_standard = self.create_standard_page() 
-        self.page_enterprise = self.create_enterprise_page()
-        self.page_server_setup = self.create_server_setup_page() 
-        self.page_active_server = self.create_active_server_page()
-        self.page_friends = self.create_friends_page() 
+        # SAYFALARA ÖZEL 'page_bg' ID'si EKLENDİ (AÇIK TEMA BUG'I İÇİN)
+        self.stacked_widget = QStackedWidget(); self.stacked_widget.setObjectName("main_stack")
+        self.page_selection = self.create_selection_page(); self.page_selection.setObjectName("page_bg")
+        self.page_standard = self.create_standard_page(); self.page_standard.setObjectName("page_bg")
+        self.page_enterprise = self.create_enterprise_page(); self.page_enterprise.setObjectName("page_bg")
+        self.page_server_setup = self.create_server_setup_page(); self.page_server_setup.setObjectName("page_bg")
+        self.page_active_server = self.create_active_server_page(); self.page_active_server.setObjectName("page_bg")
+        self.page_friends = self.create_friends_page(); self.page_friends.setObjectName("page_bg")
 
         self.stacked_widget.addWidget(self.page_selection)
         self.stacked_widget.addWidget(self.page_standard)
@@ -861,7 +653,6 @@ class DashboardView(QWidget):
         content_layout.addWidget(self.stacked_widget)
         self.main_layout.addWidget(self.sidebar); self.main_layout.addWidget(self.content_area)
 
-        # ==================== YÜZEN PROFİL KARTI ====================
         self.floating_profile_box = QFrame(self) 
         self.floating_profile_box.setObjectName("floating_profile")
         shadow = QGraphicsDropShadowEffect(self); shadow.setBlurRadius(20); shadow.setXOffset(0); shadow.setYOffset(5); shadow.setColor(QColor(0, 0, 0, 150))
@@ -870,16 +661,14 @@ class DashboardView(QWidget):
         pf_layout = QHBoxLayout(self.floating_profile_box); pf_layout.setContentsMargins(12, 8, 12, 8); pf_layout.setSpacing(8)
         self.lbl_avatar = QLabel("👤"); self.lbl_avatar.setObjectName("profile_avatar"); self.lbl_avatar.setFixedSize(40, 40); self.lbl_avatar.setAlignment(Qt.AlignCenter)
 
-        info_widget = QWidget()
-        info_layout = QVBoxLayout(info_widget); info_layout.setContentsMargins(0,0,0,0); info_layout.setSpacing(0)
+        info_widget = QWidget(); info_layout = QVBoxLayout(info_widget); info_layout.setContentsMargins(0,0,0,0); info_layout.setSpacing(0)
         
         name_status_layout = QHBoxLayout()
         self.lbl_username = QLabel("Yükleniyor..."); self.lbl_username.setObjectName("profile_user")
         self.lbl_status = QLabel("🟢") 
         name_status_layout.addWidget(self.lbl_username); name_status_layout.addWidget(self.lbl_status); name_status_layout.addStretch()
 
-        self.lbl_email = QLabel("..."); self.lbl_email.setObjectName("profile_email")
-        self.lbl_email.setFixedWidth(95) 
+        self.lbl_email = QLabel("..."); self.lbl_email.setObjectName("profile_email"); self.lbl_email.setFixedWidth(95) 
 
         info_layout.addLayout(name_status_layout); info_layout.addWidget(self.lbl_email); info_layout.setAlignment(Qt.AlignVCenter)
 
@@ -904,7 +693,8 @@ class DashboardView(QWidget):
         self.settings.setValue("has_completed_onboarding", True); self.stacked_widget.setCurrentWidget(self.page_standard)
 
     def create_friends_page(self):
-        page = QWidget(); layout = QVBoxLayout(page); layout.setContentsMargins(40, 40, 40, 40); layout.setAlignment(Qt.AlignTop)
+        page = QWidget(); page.setObjectName("friends_page_main")
+        layout = QVBoxLayout(page); layout.setContentsMargins(40, 40, 40, 40); layout.setAlignment(Qt.AlignTop)
 
         top_bar = QHBoxLayout()
         self.btn_friends_online = QPushButton("Çevrimiçi"); self.btn_friends_online.setObjectName("tab_btn_active"); self.btn_friends_online.setCursor(Qt.PointingHandCursor)
@@ -917,7 +707,10 @@ class DashboardView(QWidget):
         top_bar.addWidget(self.btn_friends_online); top_bar.addWidget(self.btn_friends_all); top_bar.addStretch(); top_bar.addWidget(self.btn_search_friend)
         
         divider = QFrame(); divider.setFrameShape(QFrame.HLine); divider.setStyleSheet("color: rgba(150,150,150,0.2); margin: 15px 0;")
-        self.friends_search_input = QLineEdit(); self.friends_search_input.setPlaceholderText("Arkadaşlarda Ara..."); self.friends_search_input.setMinimumHeight(45)
+        
+        self.friends_search_input = QLineEdit(); self.friends_search_input.setObjectName("search_input") 
+        self.friends_search_input.setPlaceholderText("Arkadaşlarda Ara..."); self.friends_search_input.setMinimumHeight(45)
+        
         self.friends_list_area = QListWidget(); self.friends_list_area.setObjectName("friends_list")
         
         empty_item = QListWidgetItem("Henüz arkadaş listeniz boş."); empty_item.setTextAlignment(Qt.AlignCenter); empty_item.setFlags(Qt.NoItemFlags)
@@ -927,7 +720,7 @@ class DashboardView(QWidget):
         return page
 
     def create_active_server_page(self):
-        page = QWidget()
+        page = QWidget(); page.setObjectName("active_server_main")
         layout = QHBoxLayout(page); layout.setContentsMargins(0, 0, 0, 0); layout.setSpacing(0)
 
         self.channel_sidebar = QFrame(); self.channel_sidebar.setObjectName("channel_sidebar"); self.channel_sidebar.setFixedWidth(240)
@@ -957,7 +750,7 @@ class DashboardView(QWidget):
         return page
 
     def create_server_setup_page(self):
-        page = QWidget(); layout = QVBoxLayout(page); layout.setAlignment(Qt.AlignCenter)
+        page = QWidget(); page.setObjectName("setup_page_main"); layout = QVBoxLayout(page); layout.setAlignment(Qt.AlignCenter)
         self.setup_box = QFrame(); self.setup_box.setObjectName("payment_box"); self.setup_box.setFixedSize(550, 450)
         box_layout = QVBoxLayout(self.setup_box); box_layout.setContentsMargins(40, 40, 40, 40); box_layout.setSpacing(20)
         
@@ -979,7 +772,7 @@ class DashboardView(QWidget):
         return page
 
     def create_selection_page(self):
-        page = QWidget(); layout = QVBoxLayout(page); layout.setAlignment(Qt.AlignCenter); layout.setSpacing(40)
+        page = QWidget(); page.setObjectName("selection_page_main"); layout = QVBoxLayout(page); layout.setAlignment(Qt.AlignCenter); layout.setSpacing(40)
         title_box = QWidget(); title_layout = QVBoxLayout(title_box); title_layout.setAlignment(Qt.AlignCenter)
         self.lbl_sel_title = QLabel(); self.lbl_sel_title.setObjectName("welcome_title"); self.lbl_sel_title.setAlignment(Qt.AlignCenter)
         self.lbl_sel_sub = QLabel(); self.lbl_sel_sub.setObjectName("welcome_sub"); self.lbl_sel_sub.setAlignment(Qt.AlignCenter)
@@ -997,7 +790,7 @@ class DashboardView(QWidget):
         return page
 
     def create_standard_page(self):
-        page = QWidget(); layout = QVBoxLayout(page); layout.setAlignment(Qt.AlignCenter); layout.setSpacing(20) 
+        page = QWidget(); page.setObjectName("standard_page_main"); layout = QVBoxLayout(page); layout.setAlignment(Qt.AlignCenter); layout.setSpacing(20) 
         top_layout = QVBoxLayout(); top_layout.setAlignment(Qt.AlignCenter)
         self.lbl_welcome_title = QLabel(); self.lbl_welcome_title.setObjectName("welcome_title"); self.lbl_welcome_title.setAlignment(Qt.AlignCenter)
         self.lbl_welcome_sub = QLabel(); self.lbl_welcome_sub.setObjectName("welcome_sub"); self.lbl_welcome_sub.setAlignment(Qt.AlignCenter)
@@ -1017,7 +810,7 @@ class DashboardView(QWidget):
         return page
 
     def create_enterprise_page(self):
-        page = QWidget(); layout = QVBoxLayout(page); layout.setAlignment(Qt.AlignCenter)
+        page = QWidget(); page.setObjectName("enterprise_page_main"); layout = QVBoxLayout(page); layout.setAlignment(Qt.AlignCenter)
         self.payment_box = QFrame(); self.payment_box.setObjectName("payment_box"); self.payment_box.setFixedSize(450, 450)
         box_layout = QVBoxLayout(self.payment_box); box_layout.setContentsMargins(40, 40, 40, 40); box_layout.setSpacing(15)
 
@@ -1181,6 +974,14 @@ class DashboardView(QWidget):
 
         if self.is_dark_mode:
             self.setStyleSheet(f"""
+                /* CSS BUG FIX: ZORUNLU AÇIK/KOYU TEMA ARKA PLANLARI */
+                QWidget#dashboard_main, QWidget#page_bg, QStackedWidget#main_stack,
+                QWidget#selection_page_main, QWidget#standard_page_main, QWidget#enterprise_page_main,
+                QWidget#setup_page_main, QWidget#active_server_main, QWidget#friends_page_main {{ 
+                    background-color: #313338; color: #dcddde; 
+                }}
+                QWidget#page_bg QLabel {{ color: #ffffff; }}
+                
                 QFrame#sidebar {{ background-color: #1e2124; border-right: 1px solid #282b30; }}
                 QLabel#logo_text {{ color: #ffffff; font-size: 18px; font-weight: 800; }}
                 QLabel#menu_title {{ color: #87909c; font-size: 11px; font-weight: bold; margin-top: 10px; }}
@@ -1196,10 +997,8 @@ class DashboardView(QWidget):
                 
                 QPushButton#btn_settings {{ background: transparent; color: #dcddde; border: none; border-radius: 6px; font-size: 16px; }}
                 QPushButton#btn_settings:hover {{ background-color: #35393f; color: #ffffff; }}
-                
                 QPushButton#btn_mic {{ background-color: {mic_bg}; color: white if "{mic_bg}" != "transparent" else "#dcddde"; border: none; border-radius: 6px; font-size: 16px; }}
                 QPushButton#btn_mic:hover {{ background-color: #35393f if "{mic_bg}" == "transparent" else "#c9383b"; color: #ffffff; }}
-                
                 QPushButton#btn_deafen {{ background-color: {deaf_bg}; color: white if "{deaf_bg}" != "transparent" else "#dcddde"; border: none; border-radius: 6px; font-size: 16px; }}
                 QPushButton#btn_deafen:hover {{ background-color: #35393f if "{deaf_bg}" == "transparent" else "#c9383b"; color: #ffffff; }}
 
@@ -1264,9 +1063,19 @@ class DashboardView(QWidget):
                 QPushButton#tab_btn_active {{ background-color: #404249; color: white; border-radius: 6px; padding: 8px 15px; font-weight: bold; border: none; }}
                 QPushButton#tab_btn {{ background-color: transparent; color: #949ba4; border-radius: 6px; padding: 8px 15px; font-weight: bold; border: none; }}
                 QPushButton#tab_btn:hover {{ background-color: #35393f; color: #dcddde; }}
+                QLineEdit#search_input {{ background-color: #1e1f22; border: 1px solid #444; border-radius: 8px; padding: 0 15px; font-size: 14px; color: #ffffff; }}
+                QLineEdit#search_input:focus {{ border: 1px solid #5865f2; }}
             """)
         else:
             self.setStyleSheet(f"""
+                /* YENİ: AÇIK TEMA BUG'I İÇİN GLOBAL ARKA PLAN ZORLAMASI */
+                QWidget#dashboard_main, QWidget#page_bg, QStackedWidget#main_stack,
+                QWidget#selection_page_main, QWidget#standard_page_main, QWidget#enterprise_page_main,
+                QWidget#setup_page_main, QWidget#active_server_main, QWidget#friends_page_main {{ 
+                    background-color: #ffffff; color: #060607; 
+                }}
+                QWidget#page_bg QLabel {{ color: #060607; }}
+                
                 QFrame#sidebar {{ background-color: #f2f3f5; border-right: 1px solid #e3e5e8; }}
                 QLabel#logo_text {{ color: #060607; font-size: 18px; font-weight: 800; }}
                 QLabel#menu_title {{ color: #5c5e66; font-size: 11px; font-weight: bold; margin-top: 10px; }}
@@ -1282,10 +1091,8 @@ class DashboardView(QWidget):
                 
                 QPushButton#btn_settings {{ background: transparent; color: #4e5058; border: none; border-radius: 6px; font-size: 16px; }}
                 QPushButton#btn_settings:hover {{ background-color: #e3e5e8; color: #060607; }}
-                
                 QPushButton#btn_mic {{ background-color: {mic_bg}; color: white if "{mic_bg}" != "transparent" else "#4e5058"; border: none; border-radius: 6px; font-size: 16px; }}
                 QPushButton#btn_mic:hover {{ background-color: #e3e5e8 if "{mic_bg}" == "transparent" else "#c9383b"; color: #060607 if "{mic_bg}" == "transparent" else "#ffffff"; }}
-                
                 QPushButton#btn_deafen {{ background-color: {deaf_bg}; color: white if "{deaf_bg}" != "transparent" else "#4e5058"; border: none; border-radius: 6px; font-size: 16px; }}
                 QPushButton#btn_deafen:hover {{ background-color: #e3e5e8 if "{deaf_bg}" == "transparent" else "#c9383b"; color: #060607 if "{deaf_bg}" == "transparent" else "#ffffff"; }}
 
@@ -1319,7 +1126,6 @@ class DashboardView(QWidget):
                 QPushButton#success_btn:hover {{ background-color: #1b8546; }}
                 QPushButton#text_btn {{ background: transparent; color: #5c5e66; font-weight: bold; font-size: 13px; border: none; }}
                 QPushButton#text_btn:hover {{ color: #1877f2; text-decoration: underline; }}
-                
                 QPushButton#secondary_btn {{ background-color: #f8f9fa; color: #4e5058; border: 1px solid #ccc; border-radius: 6px; padding: 10px; font-weight: bold; font-size: 13px; }}
                 QPushButton#secondary_btn:hover {{ background-color: #e3e5e8; }}
 
@@ -1349,4 +1155,6 @@ class DashboardView(QWidget):
                 QPushButton#tab_btn_active {{ background-color: #e3e5e8; color: #060607; border-radius: 6px; padding: 8px 15px; font-weight: bold; border: none; }}
                 QPushButton#tab_btn {{ background-color: transparent; color: #5c5e66; border-radius: 6px; padding: 8px 15px; font-weight: bold; border: none; }}
                 QPushButton#tab_btn:hover {{ background-color: #e3e5e8; color: #060607; }}
+                QLineEdit#search_input {{ background-color: #f2f3f5; border: 1px solid #ccc; border-radius: 8px; padding: 0 15px; font-size: 14px; color: #060607; }}
+                QLineEdit#search_input:focus {{ border: 1px solid #1877f2; background-color: #ffffff; }}
             """)
