@@ -147,3 +147,42 @@ class ApiDeleteChannelThread(QThread):
             if res.status_code == 200: self.finished_signal.emit(True, "Kanal silindi.")
             else: self.finished_signal.emit(False, "Silme başarısız.")
         except: self.finished_signal.emit(False, "Bağlantı hatası.")
+
+
+# --- ARKADAŞLIK VE DAVET İSTEKLERİ ---
+
+class ApiFetchFriendRequestsThread(QThread):
+    finished_signal = Signal(bool, list)
+    def run(self):
+        try:
+            # Örnek Endpoint: GET /friends/requests
+            res = requests.get(f"{BASE_API_URL}/friends/requests", headers=get_api_headers(), timeout=5)
+            if res.status_code == 200: self.finished_signal.emit(True, res.json())
+            else: self.finished_signal.emit(False, [])
+        except: self.finished_signal.emit(False, [])
+
+class ApiHandleRequestThread(QThread):
+    finished_signal = Signal(bool, str)
+    def __init__(self, req_id, endpoint_suffix, action="accept"):
+        super().__init__()
+        self.req_id = req_id
+        self.endpoint_suffix = endpoint_suffix # 'friends' veya 'servers'
+        self.action = action # 'accept' veya 'reject'
+    def run(self):
+        try:
+            # Örnek: POST /friends/requests/123/accept
+            url = f"{BASE_API_URL}/{self.endpoint_suffix}/requests/{self.req_id}/{self.action}"
+            res = requests.post(url, headers=get_api_headers(), timeout=5)
+            if res.status_code == 200: self.finished_signal.emit(True, "İşlem başarılı.")
+            else: self.finished_signal.emit(False, "İşlem başarısız.")
+        except: self.finished_signal.emit(False, "Bağlantı hatası.")
+
+class ApiFetchServerInvitesThread(QThread):
+    finished_signal = Signal(bool, list)
+    def run(self):
+        try:
+            # Örnek Endpoint: GET /servers/invites
+            res = requests.get(f"{BASE_API_URL}/servers/invites", headers=get_api_headers(), timeout=5)
+            if res.status_code == 200: self.finished_signal.emit(True, res.json())
+            else: self.finished_signal.emit(False, [])
+        except: self.finished_signal.emit(False, [])

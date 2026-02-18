@@ -2,14 +2,14 @@
 import webbrowser
 from PySide6.QtWidgets import (QDialog, QFrame, QVBoxLayout, QHBoxLayout, 
                                QLabel, QLineEdit, QPushButton, QListWidget, 
-                               QListWidgetItem, QWidget, QStackedWidget, 
+                               QListWidgetItem, QWidget, QStackedWidget, QTabWidget,
                                QScrollArea, QMessageBox, QComboBox, QGraphicsDropShadowEffect)
 from PySide6.QtCore import Qt, QSize, QTimer
 from PySide6.QtGui import QColor, QFont
 
 # API Threadleri
-from api.threads import (ApiSearchUsersThread, ApiAddFriendThread, 
-                         ApiFetchChannelsThread, ApiCreateChannelThread, 
+from api.threads import (ApiSearchUsersThread, ApiAddFriendThread, ApiFetchFriendRequestsThread,ApiHandleRequestThread,
+                         ApiFetchChannelsThread, ApiCreateChannelThread, ApiFetchServerInvitesThread,
                          ApiUpdateChannelThread, ApiDeleteChannelThread)
 
 # Tema Dosyası
@@ -564,3 +564,168 @@ class SettingsDialog(QDialog):
         if row == 0: self.stacked.setCurrentIndex(0)
         elif row == 1: self.stacked.setCurrentIndex(1)
         elif row == 2: self.done(2)
+
+
+# ==========================================
+# 5. İSTEKLER VE DAVETLER DIALOGU (YENİ)
+# ==========================================
+class RequestsDialog(QDialog):
+    def __init__(self, parent, is_dark_mode, lang_dict):
+        super().__init__(parent)
+        self.lang = lang_dict
+        self.is_dark_mode = is_dark_mode
+        self.setWindowTitle(self.lang['req_title'])
+        self.setFixedSize(550, 600)
+        self.setWindowFlags(Qt.Dialog | Qt.FramelessWindowHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        
+        self.setup_ui()
+        self.fetch_all_requests()
+
+    def setup_ui(self):
+        self.bg_frame = QFrame(self)
+        self.bg_frame.setGeometry(0, 0, 550, 600)
+        self.bg_frame.setObjectName("dialog_bg")
+        shadow = QGraphicsDropShadowEffect(self); shadow.setBlurRadius(25); shadow.setXOffset(0); shadow.setYOffset(5)
+        shadow.setColor(QColor(0, 0, 0, 180 if self.is_dark_mode else 80)); self.bg_frame.setGraphicsEffect(shadow)
+
+        layout = QVBoxLayout(self.bg_frame)
+        layout.setContentsMargins(25, 25, 25, 25)
+
+        # Başlık ve Kapat Butonu
+        top_layout = QHBoxLayout()
+        lbl_title = QLabel(self.lang['req_title'])
+        lbl_title.setObjectName("dialog_title")
+        
+        btn_close = QPushButton("✕")
+        btn_close.setObjectName("dialog_btn_cancel")
+        btn_close.setFixedSize(30, 30)
+        btn_close.clicked.connect(self.reject)
+        
+        top_layout.addWidget(lbl_title)
+        top_layout.addStretch()
+        top_layout.addWidget(btn_close)
+        layout.addLayout(top_layout)
+
+        # Sekmeler (Tabs)
+        self.tabs = QTabWidget()
+        self.tab_friend = QWidget()
+        self.tab_server = QWidget()
+        
+        self.tabs.addTab(self.tab_friend, self.lang['req_tab_friend'])
+        self.tabs.addTab(self.tab_server, self.lang['req_tab_server'])
+        
+        # Arkadaş İstekleri Listesi
+        friend_layout = QVBoxLayout(self.tab_friend)
+        self.friend_list = QListWidget()
+        self.friend_list.setObjectName("req_list")
+        friend_layout.addWidget(self.friend_list)
+        
+        # Sunucu Davetleri Listesi
+        server_layout = QVBoxLayout(self.tab_server)
+        self.server_list = QListWidget()
+        self.server_list.setObjectName("req_list")
+        server_layout.addWidget(self.server_list)
+        
+        layout.addWidget(self.tabs)
+        self.bg_frame.setStyleSheet(get_dialog_stylesheet(self.is_dark_mode))
+
+    def fetch_all_requests(self):
+        # 1. Arkadaş İsteklerini Çek
+        self.friend_list.clear()
+        self.thread_friends = ApiFetchFriendRequestsThread()
+        self.thread_friends.finished_signal.connect(self.on_friends_loaded)
+        self.thread_friends.start()
+        
+        # 2. Sunucu Davetlerini Çek
+        self.server_list.clear()
+        self.thread_servers = ApiFetchServerInvitesThread()
+        self.thread_servers.finished_signal.connect(self.on_servers_loaded)
+        self.thread_servers.start()
+
+    def on_friends_loaded(self, success, requests):
+        if not success or not requests:
+            item = QListWidgetItem(self.lang['req_no_friend'])
+            item.setTextAlignment(Qt.AlignCenter); item.setFlags(Qt.NoItemFlags)
+            self.friend_list.addItem(item)
+            return
+            
+        for req in requests:
+            self.add_request_item(self.friend_list, req, is_friend_req=True)
+
+    def on_servers_loaded(self, success, invites):
+        if not success or not invites:
+            item = QListWidgetItem(self.lang['req_no_server'])
+            item.setTextAlignment(Qt.AlignCenter); item.setFlags(Qt.NoItemFlags)
+            self.server_list.addItem(item)
+            return
+            
+        for inv in invites:
+            self.add_request_item(self.server_list, inv, is_friend_req=False)
+
+    def add_request_item(self, list_widget, data, is_friend_req):
+        item = QListWidgetItem(list_widget)
+        item.setSizeHint(QSize(0, 70))
+        
+        row_widget = QWidget()
+        row_layout = QHBoxLayout(row_widget)
+        row_layout.setContentsMargins(10, 5, 10, 5)
+        
+        # Avatar
+        lbl_avatar = QLabel("👤" if is_friend_req else "📨")
+        lbl_avatar.setStyleSheet("font-size: 24px;")
+        
+        # Bilgi
+        info_layout = QVBoxLayout()
+        name = data.get('username') if is_friend_req else data.get('server_name', 'Sunucu')
+        sub_text = "Arkadaşlık İsteği" if is_friend_req else f"Davet Eden: {data.get('inviter', '?')}"
+        
+        lbl_name = QLabel(name)
+        lbl_name.setStyleSheet("font-weight: bold; font-size: 14px;" + ("color: #000;" if not self.is_dark_mode else "color: #fff;"))
+        lbl_sub = QLabel(sub_text)
+        lbl_sub.setStyleSheet("font-size: 11px; color: #888;")
+        
+        info_layout.addWidget(lbl_name)
+        info_layout.addWidget(lbl_sub)
+        
+        # Butonlar
+        btn_accept = QPushButton("✓")
+        btn_accept.setObjectName("btn_accept")
+        btn_accept.setFixedSize(40, 35)
+        btn_accept.setToolTip(self.lang['btn_accept'])
+        btn_accept.setCursor(Qt.PointingHandCursor)
+        
+        btn_reject = QPushButton("✕")
+        btn_reject.setObjectName("btn_reject")
+        btn_reject.setFixedSize(40, 35)
+        btn_reject.setToolTip(self.lang['btn_reject'])
+        btn_reject.setCursor(Qt.PointingHandCursor)
+        
+        # Sinyaller
+        req_id = data.get('id')
+        endpoint = 'friends' if is_friend_req else 'servers'
+        
+        btn_accept.clicked.connect(lambda: self.handle_action(req_id, endpoint, 'accept'))
+        btn_reject.clicked.connect(lambda: self.handle_action(req_id, endpoint, 'reject'))
+        
+        row_layout.addWidget(lbl_avatar)
+        row_layout.addLayout(info_layout)
+        row_layout.addStretch()
+        row_layout.addWidget(btn_accept)
+        row_layout.addWidget(btn_reject)
+        
+        list_widget.setItemWidget(item, row_widget)
+
+    def handle_action(self, req_id, endpoint, action):
+        self.thread_action = ApiHandleRequestThread(req_id, endpoint, action)
+        self.thread_action.finished_signal.connect(lambda s, m: self.on_action_finished(s, m, endpoint, action))
+        self.thread_action.start()
+
+    def on_action_finished(self, success, msg, endpoint, action):
+        if success:
+            msg_key = 'msg_friend_ok' if endpoint == 'friends' and action == 'accept' else \
+                      'msg_server_ok' if endpoint == 'servers' and action == 'accept' else 'msg_rej_ok'
+            QMessageBox.information(self, "Bilgi", self.lang.get(msg_key, msg))
+            self.fetch_all_requests() # Listeyi yenile
+        else:
+            QMessageBox.warning(self, "Hata", msg)

@@ -8,11 +8,12 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
 from PySide6.QtCore import Qt, QSize, QSettings, QTimer, QPropertyAnimation, QEasingCurve
 from PySide6.QtGui import QIcon, QFont, QColor
 
-# MODULE IMPORTS
+# YENİ MODÜLER YAPIDAN İÇERİ AKTARIMLAR
 from ui.resources.languages import DASHBOARD_LANGS
 from ui.styles.dashboard_theme import get_dashboard_stylesheet
+# EKSİK OLAN ApiFetchChannelsThread EKLENDİ
 from api.threads import (ApiFetchProfileThread, ApiCreateServerThread, 
-                         ApiFetchMyServersThread, ApiJoinServerThread)
+                         ApiFetchMyServersThread, ApiJoinServerThread, ApiFetchChannelsThread)
 from ui.components.dialogs import CustomDialog, AddFriendDialog, SettingsDialog
 
 class DashboardView(QWidget):
@@ -28,11 +29,11 @@ class DashboardView(QWidget):
         self.is_mic_on = True
         self.is_deafened = False
         
-        # STATE VARIABLES
+        # STATE VARIABLES (DURUM DEĞİŞKENLERİ)
         self.active_server_id = None
         self.active_server_name = ""
         self.my_servers = []
-        self.user_plan = "standard" # Default plan
+        self.user_plan = "standard" # Varsayılan plan
         
         self.setup_ui()
         self.sync_settings()
@@ -98,9 +99,8 @@ class DashboardView(QWidget):
         if success and data:
             self.lbl_username.setText(data.get("name", data.get("username", "Kullanıcı")))
             self.lbl_email.setText(data.get("email", "bilinmeyen@hesap.com"))
-            # YENİ: Kullanıcı planını kaydet (standard/enterprise)
+            # EKSİK OLAN KISIM: Plan bilgisini kaydet ve kart durumunu güncelle
             self.user_plan = data.get("plan", "standard")
-            # Profil yüklendiğinde arayüzü tekrar kontrol et (Belki sunucu limiti değişir)
             self.update_creation_card_state()
 
     def fetch_my_servers(self):
@@ -114,14 +114,12 @@ class DashboardView(QWidget):
         self.my_servers = servers if success and isinstance(servers, list) else []
         t = DASHBOARD_LANGS[self.current_lang]
         
-        # 1. Ana Sayfa Butonu
         home_item = QListWidgetItem(f"🏠 {t['home_btn']}")
         home_item.setFont(QFont("Segoe UI", 11, QFont.Bold))
         home_item.setData(Qt.UserRole, "HOME")
         self.server_list.addItem(home_item)
         
-        # 2. YENİ: Sunucu Ekle Butonu ("1 Numaralı Kısım")
-        # Bu butona basınca Sunucu Oluşturma/Katılma paneli açılacak
+        # Sunucu Ekle Butonu
         add_server_item = QListWidgetItem("➕")
         add_server_item.setTextAlignment(Qt.AlignCenter)
         add_server_item.setFont(QFont("Segoe UI", 14, QFont.Bold))
@@ -152,21 +150,21 @@ class DashboardView(QWidget):
                     item.setFont(QFont("Segoe UI", 11)); item.setData(Qt.UserRole, srv.get("id"))
                     self.server_list.addItem(item)
                 
-                # Sunucu varsa varsayılan olarak Arkadaş listesini aç
                 self.stacked_widget.setCurrentWidget(self.page_friends) 
                 self.lbl_channel_name.setText(t['friends_title'])
+                # EKSİK OLAN KISIM: Kart durumunu güncelle
                 self.update_creation_card_state()
                 
         elif error_type == "UNAUTHORIZED": QTimer.singleShot(100, self.handle_unauthorized)
         else:
-            item = QListWidgetItem("Bağlantı Bekleniyor..."); item.setFont(QFont("Segoe UI", 10)); self.server_list.addItem(item)
+            item = QListWidgetItem("Bağlantı Bekleniyor..."); item.setFont(QFont("Segoe UI", 10)); item.setFlags(Qt.NoItemFlags)
+            self.server_list.addItem(item)
 
     def on_server_selected(self, item):
         role = item.data(Qt.UserRole)
         if not role: return
         t = DASHBOARD_LANGS[self.current_lang]
         
-        # Ana Sayfa Seçimi
         if role == "HOME":
             self.active_server_id = None
             self.active_server_name = ""
@@ -174,10 +172,9 @@ class DashboardView(QWidget):
             self.lbl_channel_name.setText(t['friends_title'])
             return
         
-        # YENİ: Sunucu Ekle Butonu Seçimi
         if role == "ADD_SERVER":
             self.active_server_id = None
-            self.update_creation_card_state() # Limit kontrolü yap
+            self.update_creation_card_state() 
             self.stacked_widget.setCurrentWidget(self.page_standard)
             self.lbl_channel_name.setText(t['setup_title'])
             return
@@ -187,17 +184,15 @@ class DashboardView(QWidget):
         self.active_server_name = item.text().replace("🏢 ", "")
         
         self.lbl_srv_title.setText(self.active_server_name)
-        self.lbl_channel_name.setText("# genel-sohbet")
+        self.lbl_channel_name.setText("# ...")
         self.stacked_widget.setCurrentWidget(self.page_active_server)
-        self.populate_mock_channels()
+        
+        # EKSİK OLAN KISIM: Gerçek kanalları çek
+        self.fetch_server_channels()
 
+    # EKSİK OLAN FONKSİYON: Sunucu Oluşturma Kartını Gizle/Göster
     def update_creation_card_state(self):
-        """
-        Kullanıcı 'Standard' ise ve en az 1 sunucusu varsa,
-        'Sunucu Oluştur' ("2 Numaralı Kutu") kartını gizle.
-        """
         if hasattr(self, 'card_create'):
-            # Kullanıcı planı 'standard' ise ve sunucu sayısı >= 1 ise gizle
             has_server_limit_reached = (len(self.my_servers) >= 1)
             is_standard_user = (self.user_plan == "standard")
             
@@ -206,12 +201,64 @@ class DashboardView(QWidget):
             else:
                 self.card_create.setVisible(True)
 
-    def populate_mock_channels(self):
-        self.channel_list.clear(); t = DASHBOARD_LANGS[self.current_lang]
-        cat1 = QListWidgetItem(t['cat_text']); cat1.setFlags(Qt.NoItemFlags); cat1.setFont(QFont("Segoe UI", 10, QFont.Bold))
-        self.channel_list.addItem(cat1); self.channel_list.addItem(QListWidgetItem("   # genel-sohbet"))
-        cat2 = QListWidgetItem(t['cat_board']); cat2.setFlags(Qt.NoItemFlags); cat2.setFont(QFont("Segoe UI", 10, QFont.Bold))
-        self.channel_list.addItem(cat2); self.channel_list.addItem(QListWidgetItem("   📋 Proje Panosu"))
+    # EKSİK OLAN FONKSİYON: Gerçek Kanalları Çek
+    def fetch_server_channels(self):
+        if not self.active_server_id: return
+        self.channel_list.clear()
+        
+        item = QListWidgetItem("Yükleniyor...")
+        item.setFlags(Qt.NoItemFlags)
+        self.channel_list.addItem(item)
+        
+        self.channels_thread = ApiFetchChannelsThread(self.active_server_id)
+        self.channels_thread.finished_signal.connect(self.on_channels_loaded)
+        self.channels_thread.start()
+
+    # EKSİK OLAN FONKSİYON: Kanalları Listeye Yükle
+    def on_channels_loaded(self, success, channels):
+        self.channel_list.clear()
+        t = DASHBOARD_LANGS[self.current_lang]
+        
+        if not success or not channels:
+            item = QListWidgetItem("Kanal bulunamadı.")
+            item.setFlags(Qt.NoItemFlags)
+            self.channel_list.addItem(item)
+            return
+
+        # Gruplama
+        text_channels = [c for c in channels if c.get('type') == 0]
+        voice_channels = [c for c in channels if c.get('type') == 2]
+        board_channels = [c for c in channels if c.get('type') == 3]
+
+        if text_channels:
+            header = QListWidgetItem(t['cat_text'])
+            header.setFlags(Qt.NoItemFlags)
+            header.setFont(QFont("Segoe UI", 10, QFont.Bold))
+            self.channel_list.addItem(header)
+            for ch in text_channels:
+                item = QListWidgetItem(f"   # {ch.get('name')}")
+                item.setData(Qt.UserRole, ch.get('id'))
+                self.channel_list.addItem(item)
+
+        if voice_channels:
+            header = QListWidgetItem(t.get('type_voice', 'SES KANALLARI'))
+            header.setFlags(Qt.NoItemFlags)
+            header.setFont(QFont("Segoe UI", 10, QFont.Bold))
+            self.channel_list.addItem(header)
+            for ch in voice_channels:
+                item = QListWidgetItem(f"   🔊 {ch.get('name')}")
+                item.setData(Qt.UserRole, ch.get('id'))
+                self.channel_list.addItem(item)
+
+        if board_channels:
+            header = QListWidgetItem(t['cat_board'])
+            header.setFlags(Qt.NoItemFlags)
+            header.setFont(QFont("Segoe UI", 10, QFont.Bold))
+            self.channel_list.addItem(header)
+            for ch in board_channels:
+                item = QListWidgetItem(f"   📋 {ch.get('name')}")
+                item.setData(Qt.UserRole, ch.get('id'))
+                self.channel_list.addItem(item)
 
     def show_settings_page(self):
         t = DASHBOARD_LANGS[self.current_lang]
@@ -224,7 +271,8 @@ class DashboardView(QWidget):
             self.main_window.show_login()
 
     def on_channels_updated(self):
-        self.populate_mock_channels()
+        """Ayarlar panelinde bir kanal silinir veya eklenirse aktif paneli yeniler"""
+        self.fetch_server_channels()
 
     def setup_ui(self):
         self.main_layout = QHBoxLayout(self); self.main_layout.setContentsMargins(0, 0, 0, 0); self.main_layout.setSpacing(0)
@@ -362,7 +410,6 @@ class DashboardView(QWidget):
         layout = QVBoxLayout(page); layout.setAlignment(Qt.AlignCenter)
         self.setup_box = QFrame(); self.setup_box.setObjectName("payment_box"); self.setup_box.setFixedSize(550, 450)
         box_layout = QVBoxLayout(self.setup_box); box_layout.setContentsMargins(40, 40, 40, 40); box_layout.setSpacing(20)
-        
         self.lbl_setup_title = QLabel(); self.lbl_setup_title.setObjectName("pay_title"); self.lbl_setup_title.setAlignment(Qt.AlignCenter)
         self.lbl_setup_sub = QLabel(); self.lbl_setup_sub.setObjectName("welcome_sub"); self.lbl_setup_sub.setAlignment(Qt.AlignCenter); self.lbl_setup_sub.setWordWrap(True)
         self.setup_name_input = QLineEdit(); self.setup_name_input.setMinimumHeight(50)
@@ -556,7 +603,10 @@ class DashboardView(QWidget):
         
         if hasattr(self, 'msg_input'):
             self.msg_input.setPlaceholderText(t['chat_ph']); self.btn_send_msg.setText(t['btn_send'])
-            if self.channel_list.count() > 0: self.populate_mock_channels()
+            # EKSİK: populate_mock_channels yerine fetch_server_channels kullanılmalı
+            # Ancak msg_input sadece active_server sayfasında var, orada fetch çağrılıyor.
+            # Buradaki if bloğu dil değişimi anında metni güncellemek içindir.
+            pass
             
         self.btn_mic.setToolTip(t['tip_mic'])
         self.btn_deafen.setToolTip(t['tip_deaf'])

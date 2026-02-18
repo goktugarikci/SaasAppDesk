@@ -254,29 +254,34 @@ def get_dialog_stylesheet(is_dark_mode):
             QLineEdit { background-color: #1e1f22; border: 1px solid #1e1f22; border-radius: 8px; padding: 0 15px; font-size: 14px; color: #dbdee1; }
             QLineEdit:focus { border: 1px solid #5865f2; }
             
-            /* DROP-DOWN (AÇILIR KUTU) KOYU TEMA */
             QComboBox { background-color: #1e1f22; border: 1px solid #444; border-radius: 8px; padding: 0 15px; font-size: 14px; color: #dbdee1; }
-            QComboBox:hover { border: 1px solid #5865f2; }
             QComboBox::drop-down { border: none; width: 30px; }
-            QComboBox QAbstractItemView { background-color: #2b2d31; color: #dcddde; border: 1px solid #1e1f22; border-radius: 8px; outline: none; }
-            QComboBox QAbstractItemView::item { min-height: 35px; padding-left: 10px; }
-            QComboBox QAbstractItemView::item:hover { background-color: #35393f; color: #ffffff; }
+            QComboBox QAbstractItemView { background-color: #2b2d31; color: #dcddde; border: 1px solid #1e1f22; outline: none; }
+            
+            /* TAB WIDGET STİLİ (İSTEKLER İÇİN) */
+            QTabWidget::pane { border: 1px solid #444; border-radius: 8px; background: #2b2d31; }
+            QTabBar::tab { background: #1e1f22; color: #b5bac1; padding: 10px 20px; margin-right: 2px; border-top-left-radius: 6px; border-top-right-radius: 6px; font-weight: bold; }
+            QTabBar::tab:selected { background: #2b2d31; color: #ffffff; border-bottom: 2px solid #5865f2; }
+            QTabBar::tab:hover { background: #35393f; color: #dcddde; }
 
-            QListWidget#result_list { background-color: transparent; border: none; outline: none; color: #dbdee1;}
-            QListWidget#result_list::item { background-color: #2b2d31; border-radius: 8px; margin-bottom: 5px; }
-            QListWidget#result_list::item:hover { background-color: #35393f; }
-            QLabel#row_email { color: #b5bac1; font-size: 11px; }
-            QPushButton#dialog_btn_cancel { background-color: transparent; color: #b5bac1; font-size: 14px; font-weight: bold; border-radius: 6px; padding: 10px; border: none; }
+            QListWidget#req_list { background-color: transparent; border: none; outline: none; color: #dbdee1; }
+            QListWidget#req_list::item { background-color: #1e1f22; border-radius: 8px; margin-bottom: 5px; padding: 5px; }
+            QListWidget#req_list::item:hover { background-color: #35393f; }
+
+            /* BUTONLAR */
+            QPushButton#btn_accept { background-color: #23a559; color: white; border-radius: 6px; font-weight: bold; border: none; }
+            QPushButton#btn_accept:hover { background-color: #1b8546; }
+            QPushButton#btn_reject { background-color: #ed4245; color: white; border-radius: 6px; font-weight: bold; border: none; }
+            QPushButton#btn_reject:hover { background-color: #c9383b; }
+            
+            QPushButton#dialog_btn_cancel { background-color: transparent; color: #b5bac1; font-weight: bold; border: none; }
             QPushButton#dialog_btn_cancel:hover { color: #ffffff; text-decoration: underline; }
-            QPushButton#dialog_btn_ok { background-color: #5865f2; color: white; font-size: 13px; font-weight: bold; border-radius: 6px; padding: 8px; border: none; }
-            QPushButton#dialog_btn_ok:hover { background-color: #4752c4; }
+            QPushButton#dialog_btn_ok { background-color: #5865f2; color: white; font-weight: bold; border-radius: 6px; border: none; }
             
             /* REKLAM ALANI KOYU */
             QFrame#upsell_frame { background-color: #2a200d; border: 1px solid #b7791f; border-radius: 8px; }
             QLabel#upsell_text { color: #f1c40f; font-weight: bold; font-size: 14px; }
             QLabel#upsell_desc { color: #dcddde; font-size: 12px; }
-            QPushButton#secondary_btn { background-color: transparent; color: #b5bac1; font-weight: bold; border: 1px solid #444; border-radius: 6px; padding: 6px; }
-            QPushButton#secondary_btn:hover { background-color: #35393f; color: white; }
         """
     else:
         return """
@@ -285,30 +290,35 @@ def get_dialog_stylesheet(is_dark_mode):
             QLabel#dialog_sub { color: #4e5058; font-size: 13px; }
             QLineEdit { background-color: #f0f2f5; border: 1px solid #ccd0d5; border-radius: 8px; padding: 0 15px; font-size: 14px; color: #000000; }
             QLineEdit:focus { border: 1px solid #1877f2; background-color: #ffffff; }
-
-            /* DROP-DOWN (AÇILIR KUTU) AÇIK TEMA */
-            QComboBox { background-color: #f0f2f5; border: 1px solid #ccd0d5; border-radius: 8px; padding: 0 15px; font-size: 14px; color: #000000; }
-            QComboBox:hover { border: 1px solid #1877f2; background-color: #ffffff; }
-            QComboBox::drop-down { border: none; width: 30px; }
-            QComboBox QAbstractItemView { background-color: #ffffff; color: #000000; border: 1px solid #ccd0d5; border-radius: 8px; outline: none; }
-            QComboBox QAbstractItemView::item { min-height: 35px; padding-left: 10px; color: #000000; }
-            QComboBox QAbstractItemView::item:hover { background-color: #f0f2f5; color: #1877f2; }
             
-            QListWidget#result_list { background-color: transparent; border: none; outline: none; color: #000000;}
-            QListWidget#result_list::item { background-color: #f7f8fa; border: 1px solid #e3e5e8; border-radius: 8px; margin-bottom: 5px; }
-            QListWidget#result_list::item:hover { background-color: #e3e5e8; }
-            QLabel#row_email { color: #5c5e66; font-size: 11px; }
-            QPushButton#dialog_btn_cancel { background-color: transparent; color: #4e5058; font-size: 14px; font-weight: bold; border-radius: 6px; padding: 10px; border: none; }
-            QPushButton#dialog_btn_cancel:hover { color: #000000; text-decoration: underline; }
-            QPushButton#dialog_btn_ok { background-color: #1877f2; color: white; font-size: 13px; font-weight: bold; border-radius: 6px; padding: 8px; border: none; }
-            QPushButton#dialog_btn_ok:hover { background-color: #166fe5; }
+            QComboBox { background-color: #f0f2f5; border: 1px solid #ccd0d5; border-radius: 8px; padding: 0 15px; font-size: 14px; color: #000000; }
+            QComboBox::drop-down { border: none; width: 30px; }
+            QComboBox QAbstractItemView { background-color: #ffffff; color: #000000; border: 1px solid #ccd0d5; outline: none; }
+            
+            /* TAB WIDGET STİLİ AÇIK TEMA */
+            QTabWidget::pane { border: 1px solid #e3e5e8; border-radius: 8px; background: #f7f8fa; }
+            QTabBar::tab { background: #e3e5e8; color: #5c5e66; padding: 10px 20px; margin-right: 2px; border-top-left-radius: 6px; border-top-right-radius: 6px; font-weight: bold; }
+            QTabBar::tab:selected { background: #f7f8fa; color: #060607; border-bottom: 2px solid #1877f2; }
+            QTabBar::tab:hover { background: #d4d7dc; color: #060607; }
 
+            QListWidget#req_list { background-color: transparent; border: none; outline: none; color: #000000; }
+            QListWidget#req_list::item { background-color: #ffffff; border: 1px solid #e3e5e8; border-radius: 8px; margin-bottom: 5px; padding: 5px; }
+            QListWidget#req_list::item:hover { background-color: #f0f2f5; }
+
+            /* BUTONLAR */
+            QPushButton#btn_accept { background-color: #23a559; color: white; border-radius: 6px; font-weight: bold; border: none; }
+            QPushButton#btn_accept:hover { background-color: #1b8546; }
+            QPushButton#btn_reject { background-color: #ed4245; color: white; border-radius: 6px; font-weight: bold; border: none; }
+            QPushButton#btn_reject:hover { background-color: #c9383b; }
+
+            QPushButton#dialog_btn_cancel { background-color: transparent; color: #4e5058; font-weight: bold; border: none; }
+            QPushButton#dialog_btn_cancel:hover { color: #000000; text-decoration: underline; }
+            QPushButton#dialog_btn_ok { background-color: #1877f2; color: white; font-weight: bold; border-radius: 6px; border: none; }
+            
             /* REKLAM ALANI AÇIK */
             QFrame#upsell_frame { background-color: #fff8e1; border: 1px solid #ffe082; border-radius: 8px; }
             QLabel#upsell_text { color: #b7791f; font-weight: bold; font-size: 14px; }
             QLabel#upsell_desc { color: #333; font-size: 12px; }
-            QPushButton#secondary_btn { background-color: #ffffff; color: #333; font-weight: bold; border: 1px solid #ccc; border-radius: 6px; padding: 6px; }
-            QPushButton#secondary_btn:hover { background-color: #f0f0f0; }
         """
 
 def get_settings_stylesheet(is_dark_mode):

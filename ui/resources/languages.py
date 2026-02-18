@@ -69,7 +69,17 @@ DASHBOARD_LANGS = {
         'sys_mode_balance': "Dengeli (Varsayılan)",
         'sys_mode_high': "Yüksek Performans (Maksimum Hız)",
         'sys_anim_chk': "Arayüz Animasyonlarını Etkinleştir",
-        'sys_restart_warn': "⚠️ Bazı ayarların geçerli olması için uygulamayı yeniden başlatmanız gerekebilir."
+        'sys_restart_warn': "⚠️ Bazı ayarların geçerli olması için uygulamayı yeniden başlatmanız gerekebilir.",
+        'req_title': "Gelen İstekler ve Davetler",
+        'req_tab_friend': "👥 Arkadaşlık İstekleri",
+        'req_tab_server': "📨 Sunucu Davetleri",
+        'req_no_friend': "Bekleyen arkadaşlık isteği yok.",
+        'req_no_server': "Bekleyen sunucu daveti yok.",
+        'btn_accept': "Kabul Et",
+        'btn_reject': "Reddet",
+        'msg_friend_ok': "Arkadaşlık isteği kabul edildi!",
+        'msg_server_ok': "Sunucuya başarıyla katıldınız!",
+        'msg_rej_ok': "İstek reddedildi."
     },
     'EN': {
         'logo': "☁️ MySaaS Workspace", 'menu_title': "MY SERVERS",
@@ -137,7 +147,17 @@ DASHBOARD_LANGS = {
         'sys_mode_balance': "Balanced (Default)",
         'sys_mode_high': "High Performance (Max Speed)",
         'sys_anim_chk': "Enable Interface Animations",
-        'sys_restart_warn': "⚠️ You may need to restart the app for some settings to take effect."
+        'sys_restart_warn': "⚠️ You may need to restart the app for some settings to take effect.",
+        'req_title': "Incoming Requests & Invites",
+        'req_tab_friend': "👥 Friend Requests",
+        'req_tab_server': "📨 Server Invites",
+        'req_no_friend': "No pending friend requests.",
+        'req_no_server': "No pending server invites.",
+        'btn_accept': "Accept",
+        'btn_reject': "Decline",
+        'msg_friend_ok': "Friend request accepted!",
+        'msg_server_ok': "Successfully joined the server!",
+        'msg_rej_ok': "Request declined."
     },
     'GER': {
         'logo': "☁️ MySaaS Workspace", 'menu_title': "MEINE SERVER",
@@ -206,6 +226,16 @@ DASHBOARD_LANGS = {
         'sys_mode_balance': "Ausgeglichen (Standard)",
         'sys_mode_high': "Hochleistung (Maximale Geschwindigkeit)",
         'sys_anim_chk': "Schnittstellenanimationen aktivieren",
-        'sys_restart_warn': "⚠️ Sie müssen die App möglicherweise neu starten, damit einige Einstellungen wirksam werden."
+        'sys_restart_warn': "⚠️ Sie müssen die App möglicherweise neu starten, damit einige Einstellungen wirksam werden.",
+        'req_title': "Eingehende Anfragen & Einladungen",
+        'req_tab_friend': "👥 Freundschaftsanfragen",
+        'req_tab_server': "📨 Server-Einladungen",
+        'req_no_friend': "Keine ausstehenden Freundschaftsanfragen.",
+        'req_no_server': "Keine ausstehenden Server-Einladungen.",
+        'btn_accept': "Akzeptieren",
+        'btn_reject': "Ablehnen",
+        'msg_friend_ok': "Freundschaftsanfrage akzeptiert!",
+        'msg_server_ok': "Dem Server erfolgreich beigetreten!",
+        'msg_rej_ok': "Anfrage abgelehnt."
     }
 }
