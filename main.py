@@ -2,7 +2,8 @@
 import sys
 import requests
 import threading
-from PySide6.QtWidgets import QApplication, QMainWindow, QStackedWidget
+from PySide6.QtWidgets import QApplication, QMainWindow, QStackedWidget, QMessageBox
+from PySide6.QtCore import Qt
 from PySide6.QtCore import QSettings
 
 from ui.views.login_view import LoginView
@@ -26,15 +27,11 @@ def notify_server_status(is_online):
                 url = "http://localhost:8080/api/user/status" 
                 
                 # Sinyali gönder (3 saniye içinde yanıt gelmezse iptal et ki programı yormasın)
-                response = requests.post(url, json=payload, headers=headers, timeout=3)
+                requests.post(url, json=payload, headers=headers, timeout=3)
                 
-                if response.status_code == 200:
-                    durum = "ÇEVRİMİÇİ" if is_online else "ÇEVRİMDIŞI"
-                    print(f"[BAŞARILI] Sunucuya {durum} bilgisi iletildi.")
-                else:
-                    print(f"[HATA] Statü iletilemedi. Sunucu HTTP Kodu: {response.status_code}")
-        except Exception as e:
-            print(f"[BAĞLANTI BEKLENİYOR] C++ Sunucusuna statü iletilemedi (API yolu hatalı veya kapalı olabilir).")
+        except Exception:
+            # Bağlantı hatası olursa program akışını bozma
+            pass
 
     # Fonksiyon çağrıldığında arayüzü kilitlememesi için bağımsız çalıştırıyoruz
     threading.Thread(target=_send, daemon=True).start()
@@ -55,10 +52,19 @@ class MainWindow(QMainWindow):
         self.central_stacked_widget.setCurrentWidget(self.login_view)
 
     def show_dashboard(self):
-        """Kullanıcı başarıyla giriş yaptığında bu fonksiyon çağrılır"""
-        if not hasattr(self, 'dashboard_view'):
-            self.dashboard_view = DashboardView(self)
-            self.central_stacked_widget.addWidget(self.dashboard_view)
+        """
+        Kullanıcı başarıyla giriş yaptığında bu fonksiyon çağrılır.
+        Her zaman YENİ bir Dashboard oluşturur (Eski verileri önler).
+        """
+        # Eğer hafızada eski bir dashboard kaldıysa onu temizle (Garanti önlem)
+        if hasattr(self, 'dashboard_view'):
+            self.central_stacked_widget.removeWidget(self.dashboard_view)
+            self.dashboard_view.deleteLater()
+            del self.dashboard_view
+
+        # Sıfırdan temiz bir Dashboard oluştur
+        self.dashboard_view = DashboardView(self)
+        self.central_stacked_widget.addWidget(self.dashboard_view)
         
         self.dashboard_view.sync_settings()
         
@@ -79,11 +85,19 @@ class MainWindow(QMainWindow):
         # 2. Token'ı sistemden sil
         settings = QSettings("MySaaS", "DesktopClient")
         settings.remove("auth_token") 
+        # Beni hatırla seçeneğini de sıfırla ki otomatik girmesin
+        settings.remove("remember_me") 
         
-        # 3. Arayüzde "⚫ Çevrimdışı" yap
+        # 3. CRITICAL: DASHBOARD'I HAFIZADAN TAMAMEN SİL (ÖNBELLEK TEMİZLİĞİ)
         if hasattr(self, 'dashboard_view'):
-            self.dashboard_view.set_status(False) 
+            # StackedWidget'tan çıkar
+            self.central_stacked_widget.removeWidget(self.dashboard_view)
+            # Nesneyi yok et
+            self.dashboard_view.deleteLater()
+            # Değişkeni sil
+            del self.dashboard_view
             
+        # 4. Login formunu temizle ve göster
         self.login_view.reset_form()
         self.login_view.sync_settings()
         self.central_stacked_widget.setCurrentWidget(self.login_view)
@@ -95,28 +109,50 @@ class MainWindow(QMainWindow):
         token = settings.value("auth_token")
         
         if token:
-            print("[SİSTEM] Uygulama 'X' ile kapatıldı. Çevrimdışı sinyali C++ sunucusuna gönderiliyor...")
-            
             # Sunucuya çıkış yaptığımızı fısılda
             notify_server_status(is_online=False)
             
         event.accept() # Uygulamanın güvenle kapanmasına izin ver
 
-
 if __name__ == "__main__":
+    # --- YENİ: PERFORMANS VE GPU AYARLARI ---
+    # Uygulama başlamadan önce ayarları oku
+    temp_settings = QSettings("MySaaS", "DesktopClient")
+    use_gpu = temp_settings.value("use_gpu", True, type=bool)
+    perf_mode = temp_settings.value("perf_mode", "balanced", type=str)
+    
+    # 1. GPU Hızlandırma Ayarı
+    if use_gpu:
+        # OpenGL ve GPU paylaşımını aktif et (Arayüz Hızlandırma)
+        QApplication.setAttribute(Qt.AA_ShareOpenGLContexts)
+        QApplication.setAttribute(Qt.AA_UseDesktopOpenGL)
+        # Bazı sistemlerde şu da işe yarar:
+        # QApplication.setAttribute(Qt.AA_UseOpenGLES) 
+    else:
+        # GPU'yu kapat (Yazılımsal Render - Düşük donanımlar için)
+        QApplication.setAttribute(Qt.AA_UseSoftwareOpenGL)
+
     app = QApplication(sys.argv)
+    
+    # 2. Performans Moduna Göre Ayarlar
+    # (Örnek: Animasyon sürelerini global olarak kısabiliriz veya thread önceliğini artırabiliriz)
+    if perf_mode == "high":
+        # Yüksek performans için efektleri azaltma mantığı buraya eklenebilir
+        pass 
+    elif perf_mode == "eco":
+        # Güç tasarrufu işlemleri
+        pass
+
     window = MainWindow()
     
-    # --- YENİ: BAŞLANGIÇTA OTURUM KONTROLÜ ---
-    settings = QSettings("MySaaS", "DesktopClient")
-    remember_me = settings.value("remember_me", False, type=bool)
-    token = settings.value("auth_token", "")
+    # Oturum Kontrolü
+    remember_me = temp_settings.value("remember_me", False, type=bool)
+    token = temp_settings.value("auth_token", "")
     
     if remember_me and token:
-        window.show_dashboard() # Oturumu açık tut işaretliyse direkt içeri gir
+        window.show_dashboard() 
     else:
-        window.show_login()     # İşaretli değilse Login ekranını göster
-    # -----------------------------------------
+        window.show_login()    
     
     window.show()
     sys.exit(app.exec())
