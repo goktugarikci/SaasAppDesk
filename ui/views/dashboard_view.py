@@ -8,7 +8,7 @@ from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel,
 from PySide6.QtCore import Qt, QSize, QSettings, QTimer, QPropertyAnimation, QEasingCurve
 from PySide6.QtGui import QIcon, QFont, QColor
 
-# MODÜLER IMPORTLAR
+# --- MODÜLER IMPORTLAR ---
 from ui.resources.languages import DASHBOARD_LANGS
 from ui.styles.dashboard_theme import get_dashboard_stylesheet
 from api.threads import (ApiFetchProfileThread, ApiCreateServerThread, 
@@ -18,40 +18,46 @@ from ui.components.dialogs import CustomDialog, AddFriendDialog, SettingsDialog,
 class DashboardView(QWidget):
     def __init__(self, main_window):
         super().__init__()
-        self.setObjectName("dashboard_main") 
+        self.setObjectName("dashboard_main") # CSS için ID
         self.main_window = main_window
         self.settings = QSettings("MySaaS", "DesktopClient")
+        
+        # Ayarları Yükle
         self.is_dark_mode = self.settings.value("is_dark_mode", False, type=bool)
         self.current_lang = self.settings.value("language", "TR")
         
+        # Varsayılan Durumlar
         self.is_online = True 
         self.is_mic_on = True
         self.is_deafened = False
-        
-        # STATE VARIABLES
         self.active_server_id = None
         self.active_server_name = ""
-        self.my_servers = []
-        self.user_plan = "standard" 
+        self.my_servers = [] # Kullanıcının sunucularını tutar
+        self.user_plan = "standard" # Varsayılan plan
         
+        # Arayüzü Kur
         self.setup_ui()
         self.sync_settings()
+        
+        # Verileri Çekmeye Başla
         self.fetch_my_profile()
         self.fetch_my_servers()
 
     def resizeEvent(self, event):
+        """Yüzen profil kartını ekran boyutuna göre konumlandırır"""
         super().resizeEvent(event)
         if hasattr(self, 'floating_profile_box'):
             pb_width = 245 
             pb_height = 80
+            # Sol menü genişliği (260) içinde ortala
             self.floating_profile_box.setGeometry(7, self.height() - pb_height - 15, pb_width, pb_height)
 
     def handle_unauthorized(self):
+        """Oturum süresi dolduğunda güvenli çıkış yapar (Crash Önleyici)"""
+        # Çalışan tüm threadleri durdur
         if hasattr(self, 'servers_thread') and self.servers_thread.isRunning(): self.servers_thread.quit()
-        if hasattr(self, 'join_thread') and self.join_thread.isRunning(): self.join_thread.quit()
-        if hasattr(self, 'create_thread') and self.create_thread.isRunning(): self.create_thread.quit()
-        if hasattr(self, 'profile_thread') and self.profile_thread.isRunning(): self.profile_thread.quit()
-            
+        if hasattr(self, 'channels_thread') and self.channels_thread.isRunning(): self.channels_thread.quit()
+        
         t = DASHBOARD_LANGS[self.current_lang]
         self.settings.setValue("auth_token", "") 
         self.settings.setValue("remember_me", False) 
@@ -66,11 +72,14 @@ class DashboardView(QWidget):
         self.current_lang = self.settings.value("language", "TR")
         self.apply_theme()
         self.update_texts()
-        self.lang_cb.blockSignals(True); self.lang_cb.setCurrentText(self.current_lang); self.lang_cb.blockSignals(False)
+        self.lang_cb.blockSignals(True)
+        self.lang_cb.setCurrentText(self.current_lang)
+        self.lang_cb.blockSignals(False)
 
     def toggle_sidebar(self):
         self.sidebar_anim = QPropertyAnimation(self.sidebar, b"maximumWidth")
-        self.sidebar_anim.setEasingCurve(QEasingCurve.InOutQuad); self.sidebar_anim.setDuration(250)
+        self.sidebar_anim.setEasingCurve(QEasingCurve.InOutQuad)
+        self.sidebar_anim.setDuration(250)
         if self.sidebar.width() > 10:
             self.sidebar_anim.setStartValue(260); self.sidebar_anim.setEndValue(0)
             self.sidebar.setMinimumWidth(0)
@@ -89,6 +98,8 @@ class DashboardView(QWidget):
         self.btn_deafen.setText("🎧" if not self.is_deafened else "🔈")
         self.apply_theme() 
 
+    # --- API VERİ ÇEKME İŞLEMLERİ ---
+
     def fetch_my_profile(self):
         self.profile_thread = ApiFetchProfileThread()
         self.profile_thread.finished_signal.connect(self.on_profile_fetched)
@@ -98,6 +109,7 @@ class DashboardView(QWidget):
         if success and data:
             self.lbl_username.setText(data.get("name", data.get("username", "Kullanıcı")))
             self.lbl_email.setText(data.get("email", "bilinmeyen@hesap.com"))
+            # Kullanıcı planını kaydet ve arayüzü güncelle
             self.user_plan = data.get("plan", "standard")
             self.update_creation_card_state()
 
@@ -109,6 +121,7 @@ class DashboardView(QWidget):
 
     def on_servers_fetched(self, success, servers, error_type):
         self.server_list.clear()
+        # Sunucu listesini hafızaya al (Ayarlar diyaloğu için)
         self.my_servers = servers if success and isinstance(servers, list) else []
         t = DASHBOARD_LANGS[self.current_lang]
         
@@ -118,7 +131,7 @@ class DashboardView(QWidget):
         home_item.setData(Qt.UserRole, "HOME")
         self.server_list.addItem(home_item)
         
-        # 2. Sunucu Ekle Butonu
+        # 2. Sunucu Ekle Butonu ("1 Numaralı Kısım")
         add_server_item = QListWidgetItem("➕")
         add_server_item.setTextAlignment(Qt.AlignCenter)
         add_server_item.setFont(QFont("Segoe UI", 14, QFont.Bold))
@@ -126,15 +139,15 @@ class DashboardView(QWidget):
         add_server_item.setToolTip(t['card_create_title'])
         self.server_list.addItem(add_server_item)
 
-        # 3. İstekler/Davetler Butonu
+        # 3. İstekler/Davetler Butonu (YENİ EKLENDİ)
         req_item = QListWidgetItem("📨")
         req_item.setTextAlignment(Qt.AlignCenter)
         req_item.setFont(QFont("Segoe UI", 14, QFont.Bold))
-        req_item.setData(Qt.UserRole, "REQUESTS") 
+        req_item.setData(Qt.UserRole, "REQUESTS")
         req_item.setToolTip(t.get('req_title', 'İstekler'))
         self.server_list.addItem(req_item)
 
-        # Boşluk (Spacer)
+        # Görsel Boşluk
         spacer = QListWidgetItem()
         spacer.setFlags(Qt.NoItemFlags)   
         spacer.setSizeHint(QSize(0, 15))  
@@ -142,10 +155,12 @@ class DashboardView(QWidget):
         
         if success and isinstance(servers, list):
             if len(servers) == 0:
-                item = QListWidgetItem(t['no_servers']); item.setFont(QFont("Segoe UI", 10)); item.setFlags(Qt.NoItemFlags) 
+                item = QListWidgetItem(t['no_servers'])
+                item.setFont(QFont("Segoe UI", 10))
+                item.setFlags(Qt.NoItemFlags) 
                 self.server_list.addItem(item)
                 
-                self.update_creation_card_state()
+                # Sunucu yoksa otomatik ekleme ekranına veya seçime git
                 if not self.settings.value("has_completed_onboarding", False, type=bool):
                     self.stacked_widget.setCurrentWidget(self.page_selection)
                 else:
@@ -153,16 +168,21 @@ class DashboardView(QWidget):
             else:
                 for srv in servers:
                     item = QListWidgetItem(f"🏢 {srv.get('name', 'Sunucu')}")
-                    item.setFont(QFont("Segoe UI", 11)); item.setData(Qt.UserRole, srv.get("id"))
+                    item.setFont(QFont("Segoe UI", 11))
+                    item.setData(Qt.UserRole, srv.get("id"))
                     self.server_list.addItem(item)
                 
+                # Sunucu varsa varsayılan olarak Arkadaş listesini aç
                 self.stacked_widget.setCurrentWidget(self.page_friends) 
                 self.lbl_channel_name.setText(t['friends_title'])
-                self.update_creation_card_state()
                 
-        elif error_type == "UNAUTHORIZED": QTimer.singleShot(100, self.handle_unauthorized)
+            self.update_creation_card_state() # Limit kontrolü yap
+                
+        elif error_type == "UNAUTHORIZED": 
+            QTimer.singleShot(100, self.handle_unauthorized)
         else:
-            item = QListWidgetItem("Bağlantı Bekleniyor..."); item.setFont(QFont("Segoe UI", 10)); item.setFlags(Qt.NoItemFlags)
+            item = QListWidgetItem("Bağlantı Bekleniyor...")
+            item.setFont(QFont("Segoe UI", 10))
             self.server_list.addItem(item)
 
     def on_server_selected(self, item):
@@ -170,6 +190,7 @@ class DashboardView(QWidget):
         if not role: return
         t = DASHBOARD_LANGS[self.current_lang]
         
+        # Ana Sayfa
         if role == "HOME":
             self.active_server_id = None
             self.active_server_name = ""
@@ -177,6 +198,7 @@ class DashboardView(QWidget):
             self.lbl_channel_name.setText(t['friends_title'])
             return
         
+        # Sunucu Ekleme Sayfası
         if role == "ADD_SERVER":
             self.active_server_id = None
             self.update_creation_card_state() 
@@ -184,10 +206,11 @@ class DashboardView(QWidget):
             self.lbl_channel_name.setText(t['setup_title'])
             return
 
+        # Davetler Modalı
         if role == "REQUESTS":
             dialog = RequestsDialog(self, self.is_dark_mode, t)
             dialog.exec()
-            self.fetch_my_servers() 
+            self.fetch_my_servers() # Kapatınca listeyi yenile
             return
 
         # Normal Sunucu Seçimi
@@ -198,19 +221,22 @@ class DashboardView(QWidget):
         self.lbl_channel_name.setText("# ...")
         self.stacked_widget.setCurrentWidget(self.page_active_server)
         
+        # GERÇEK KANALLARI ÇEK
         self.fetch_server_channels()
 
     def update_creation_card_state(self):
+        """Standart kullanıcı limitini kontrol edip 'Oluştur' kartını gizler/gösterir"""
         if hasattr(self, 'card_create'):
             has_server_limit_reached = (len(self.my_servers) >= 1)
             is_standard_user = (self.user_plan == "standard")
             
             if is_standard_user and has_server_limit_reached:
-                self.card_create.setVisible(False)
+                self.card_create.setVisible(False) # "2 Numaralı Kutuyu" gizle
             else:
                 self.card_create.setVisible(True)
 
     def fetch_server_channels(self):
+        """Seçili sunucunun kanallarını API'den çeker"""
         if not self.active_server_id: return
         self.channel_list.clear()
         
@@ -232,10 +258,12 @@ class DashboardView(QWidget):
             self.channel_list.addItem(item)
             return
 
+        # Kanalları Türlerine Göre Grupla
         text_channels = [c for c in channels if c.get('type') == 0]
         voice_channels = [c for c in channels if c.get('type') == 2]
         board_channels = [c for c in channels if c.get('type') == 3]
 
+        # 1. Metin Kanalları
         if text_channels:
             header = QListWidgetItem(t['cat_text'])
             header.setFlags(Qt.NoItemFlags)
@@ -246,6 +274,7 @@ class DashboardView(QWidget):
                 item.setData(Qt.UserRole, ch.get('id'))
                 self.channel_list.addItem(item)
 
+        # 2. Ses Kanalları
         if voice_channels:
             header = QListWidgetItem(t.get('type_voice', 'SES KANALLARI'))
             header.setFlags(Qt.NoItemFlags)
@@ -256,6 +285,7 @@ class DashboardView(QWidget):
                 item.setData(Qt.UserRole, ch.get('id'))
                 self.channel_list.addItem(item)
 
+        # 3. Pano Kanalları
         if board_channels:
             header = QListWidgetItem(t['cat_board'])
             header.setFlags(Qt.NoItemFlags)
@@ -266,17 +296,20 @@ class DashboardView(QWidget):
                 item.setData(Qt.UserRole, ch.get('id'))
                 self.channel_list.addItem(item)
 
+    # --- AYARLAR VE DİĞER MODALLAR ---
     def show_settings_page(self):
         t = DASHBOARD_LANGS[self.current_lang]
         dialog = SettingsDialog(self, self.is_dark_mode, t, 
                                 self.lbl_username.text(), self.lbl_email.text(),
                                 getattr(self, 'my_servers', []))
         result = dialog.exec()
-        if result == 2: 
-            self.settings.setValue("auth_token", ""); self.settings.setValue("remember_me", False) 
+        if result == 2: # Çıkış Kodu
+            self.settings.setValue("auth_token", "")
+            self.settings.setValue("remember_me", False) 
             self.main_window.show_login()
 
     def on_channels_updated(self):
+        """Ayarlardan kanal eklenip silinirse listeyi tazele"""
         self.fetch_server_channels()
 
     def setup_ui(self):
@@ -285,7 +318,8 @@ class DashboardView(QWidget):
         sidebar_layout = QVBoxLayout(self.sidebar); sidebar_layout.setContentsMargins(15, 20, 15, 15); sidebar_layout.setSpacing(15)
         self.lbl_logo = QLabel(); self.lbl_logo.setObjectName("logo_text")
         self.lbl_menu_title = QLabel(); self.lbl_menu_title.setObjectName("menu_title")
-        self.server_list = QListWidget(); self.server_list.setObjectName("server_list"); self.server_list.itemClicked.connect(self.on_server_selected)
+        self.server_list = QListWidget(); self.server_list.setObjectName("server_list")
+        self.server_list.itemClicked.connect(self.on_server_selected)
         self.server_list.setStyleSheet("padding-bottom: 100px;") 
         sidebar_layout.addWidget(self.lbl_logo); sidebar_layout.addSpacing(10)
         sidebar_layout.addWidget(self.lbl_menu_title); sidebar_layout.addWidget(self.server_list)
@@ -368,19 +402,27 @@ class DashboardView(QWidget):
 
     def create_friends_page(self, page):
         layout = QVBoxLayout(page); layout.setContentsMargins(40, 40, 40, 40); layout.setAlignment(Qt.AlignTop)
+
         top_bar = QHBoxLayout()
         self.btn_friends_online = QPushButton("Çevrimiçi"); self.btn_friends_online.setObjectName("tab_btn_active"); self.btn_friends_online.setCursor(Qt.PointingHandCursor)
         self.btn_friends_all = QPushButton("Tümü"); self.btn_friends_all.setObjectName("tab_btn"); self.btn_friends_all.setCursor(Qt.PointingHandCursor)
+        
         self.btn_search_friend = QPushButton("🔍 Arkadaş Ara"); self.btn_search_friend.setObjectName("success_btn")
         self.btn_search_friend.setFixedSize(140, 40); self.btn_search_friend.setCursor(Qt.PointingHandCursor)
         self.btn_search_friend.clicked.connect(self.show_add_friend_dialog)
+        
         top_bar.addWidget(self.btn_friends_online); top_bar.addWidget(self.btn_friends_all); top_bar.addStretch(); top_bar.addWidget(self.btn_search_friend)
+        
         divider = QFrame(); divider.setFrameShape(QFrame.HLine); divider.setStyleSheet("color: rgba(150,150,150,0.2); margin: 15px 0;")
+        
         self.friends_search_input = QLineEdit(); self.friends_search_input.setObjectName("search_input") 
         self.friends_search_input.setPlaceholderText("Arkadaşlarda Ara..."); self.friends_search_input.setMinimumHeight(45)
+        
         self.friends_list_area = QListWidget(); self.friends_list_area.setObjectName("friends_list")
+        
         empty_item = QListWidgetItem("Henüz arkadaş listeniz boş."); empty_item.setTextAlignment(Qt.AlignCenter); empty_item.setFlags(Qt.NoItemFlags)
         self.friends_list_area.addItem(empty_item)
+
         layout.addLayout(top_bar); layout.addWidget(divider); layout.addWidget(self.friends_search_input); layout.addSpacing(10); layout.addWidget(self.friends_list_area)
 
     def create_active_server_page(self, page):
@@ -392,6 +434,7 @@ class DashboardView(QWidget):
         self.channel_list = QListWidget(); self.channel_list.setObjectName("channel_list")
         self.channel_list.setStyleSheet("padding-bottom: 90px;") 
         ch_layout.addWidget(self.channel_list)
+
         self.chat_area = QFrame(); self.chat_area.setObjectName("chat_area")
         chat_layout = QVBoxLayout(self.chat_area); chat_layout.setContentsMargins(20, 20, 20, 20)
         self.msg_list = QListWidget(); self.msg_list.setObjectName("msg_list"); self.msg_list.setSelectionMode(QListWidget.NoSelection)
@@ -399,6 +442,7 @@ class DashboardView(QWidget):
         input_layout = QHBoxLayout(input_frame); input_layout.setContentsMargins(5, 5, 5, 5)
         self.msg_input = QLineEdit(); self.msg_input.setObjectName("chat_input"); self.msg_input.setMinimumHeight(45)
         self.btn_send_msg = QPushButton("Gönder"); self.btn_send_msg.setObjectName("primary_btn"); self.btn_send_msg.setFixedSize(80, 45); self.btn_send_msg.setCursor(Qt.PointingHandCursor)
+        
         input_layout.addWidget(self.msg_input); input_layout.addWidget(self.btn_send_msg)
         chat_layout.addWidget(self.msg_list); chat_layout.addWidget(input_frame)
         layout.addWidget(self.channel_sidebar); layout.addWidget(self.chat_area)
@@ -407,16 +451,19 @@ class DashboardView(QWidget):
         layout = QVBoxLayout(page); layout.setAlignment(Qt.AlignCenter)
         self.setup_box = QFrame(); self.setup_box.setObjectName("payment_box"); self.setup_box.setFixedSize(550, 450)
         box_layout = QVBoxLayout(self.setup_box); box_layout.setContentsMargins(40, 40, 40, 40); box_layout.setSpacing(20)
+        
         self.lbl_setup_title = QLabel(); self.lbl_setup_title.setObjectName("pay_title"); self.lbl_setup_title.setAlignment(Qt.AlignCenter)
         self.lbl_setup_sub = QLabel(); self.lbl_setup_sub.setObjectName("welcome_sub"); self.lbl_setup_sub.setAlignment(Qt.AlignCenter); self.lbl_setup_sub.setWordWrap(True)
         self.setup_name_input = QLineEdit(); self.setup_name_input.setMinimumHeight(50)
         self.btn_upload_icon = QPushButton(); self.btn_upload_icon.setObjectName("secondary_btn"); self.btn_upload_icon.setMinimumHeight(45); self.btn_upload_icon.setCursor(Qt.PointingHandCursor)
         self.btn_upload_icon.clicked.connect(lambda: QMessageBox.information(self, "Bilgi", "İkon yükleme özelliği yakında eklenecek."))
+        
         btn_layout = QHBoxLayout()
         self.btn_setup_cancel = QPushButton(); self.btn_setup_cancel.setObjectName("text_btn"); self.btn_setup_cancel.setCursor(Qt.PointingHandCursor)
         self.btn_setup_cancel.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.page_standard))
         self.btn_setup_create = QPushButton(); self.btn_setup_create.setObjectName("primary_btn"); self.btn_setup_create.setMinimumHeight(45); self.btn_setup_create.setCursor(Qt.PointingHandCursor)
         self.btn_setup_create.clicked.connect(self.start_server_creation) 
+
         btn_layout.addWidget(self.btn_setup_cancel); btn_layout.addWidget(self.btn_setup_create)
         box_layout.addWidget(self.lbl_setup_title); box_layout.addWidget(self.lbl_setup_sub); box_layout.addSpacing(10); box_layout.addWidget(self.setup_name_input); box_layout.addWidget(self.btn_upload_icon); box_layout.addStretch(); box_layout.addLayout(btn_layout)
         layout.addWidget(self.setup_box)
@@ -427,11 +474,14 @@ class DashboardView(QWidget):
         self.lbl_sel_title = QLabel(); self.lbl_sel_title.setObjectName("welcome_title"); self.lbl_sel_title.setAlignment(Qt.AlignCenter)
         self.lbl_sel_sub = QLabel(); self.lbl_sel_sub.setObjectName("welcome_sub"); self.lbl_sel_sub.setAlignment(Qt.AlignCenter)
         title_layout.addWidget(self.lbl_sel_title); title_layout.addWidget(self.lbl_sel_sub)
+
         cards_layout = QHBoxLayout(); cards_layout.setSpacing(30); cards_layout.setAlignment(Qt.AlignCenter)
         self.card_std, self.lbl_std_title, self.lbl_std_desc, self.btn_std = self.create_action_card("👤")
         self.btn_std.setObjectName("primary_btn"); self.btn_std.clicked.connect(self.complete_onboarding)
+
         self.card_ent, self.lbl_ent_title, self.lbl_ent_desc, self.btn_ent = self.create_action_card("🚀")
         self.btn_ent.setObjectName("success_btn"); self.card_ent.setObjectName("enterprise_card"); self.btn_ent.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.page_enterprise))
+
         cards_layout.addWidget(self.card_std); cards_layout.addWidget(self.card_ent)
         layout.addStretch(); layout.addWidget(title_box); layout.addLayout(cards_layout); layout.addStretch()
 
@@ -441,13 +491,16 @@ class DashboardView(QWidget):
         self.lbl_welcome_title = QLabel(); self.lbl_welcome_title.setObjectName("welcome_title"); self.lbl_welcome_title.setAlignment(Qt.AlignCenter)
         self.lbl_welcome_sub = QLabel(); self.lbl_welcome_sub.setObjectName("welcome_sub"); self.lbl_welcome_sub.setAlignment(Qt.AlignCenter)
         top_layout.addWidget(self.lbl_welcome_title); top_layout.addWidget(self.lbl_welcome_sub)
+
         cards_layout = QHBoxLayout(); cards_layout.setSpacing(25); cards_layout.setAlignment(Qt.AlignCenter)
         self.card_create, self.lbl_c_title, self.lbl_c_desc, self.btn_create = self.create_action_card("➕")
         self.card_join, self.lbl_j_title, self.lbl_j_desc, self.btn_join = self.create_action_card("🔗")
         self.card_friend, self.lbl_f_title, self.lbl_f_desc, self.btn_friend = self.create_action_card("👥")
+        
         self.btn_create.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.page_server_setup))
         self.btn_join.clicked.connect(self.show_join_dialog)
         self.btn_friend.clicked.connect(self.show_add_friend_dialog)
+        
         cards_layout.addWidget(self.card_create); cards_layout.addWidget(self.card_join); cards_layout.addWidget(self.card_friend)
         layout.addStretch(); layout.addLayout(top_layout); layout.addSpacing(20); layout.addLayout(cards_layout); layout.addStretch()
 
@@ -455,16 +508,19 @@ class DashboardView(QWidget):
         layout = QVBoxLayout(page); layout.setAlignment(Qt.AlignCenter)
         self.payment_box = QFrame(); self.payment_box.setObjectName("payment_box"); self.payment_box.setFixedSize(450, 450)
         box_layout = QVBoxLayout(self.payment_box); box_layout.setContentsMargins(40, 40, 40, 40); box_layout.setSpacing(15)
+
         self.lbl_pay_title = QLabel(); self.lbl_pay_title.setObjectName("pay_title"); self.lbl_pay_title.setAlignment(Qt.AlignCenter)
         self.lbl_pay_price = QLabel(); self.lbl_pay_price.setObjectName("pay_price"); self.lbl_pay_price.setAlignment(Qt.AlignCenter)
         self.lbl_pf1 = QLabel(); self.lbl_pf1.setObjectName("pay_item")
         self.lbl_pf2 = QLabel(); self.lbl_pf2.setObjectName("pay_item")
         self.lbl_pf3 = QLabel(); self.lbl_pf3.setObjectName("pay_item")
         self.lbl_pf4 = QLabel(); self.lbl_pf4.setObjectName("pay_item")
+
         self.btn_make_payment = QPushButton(); self.btn_make_payment.setObjectName("success_btn"); self.btn_make_payment.setCursor(Qt.PointingHandCursor)
         self.btn_make_payment.clicked.connect(lambda: webbrowser.open("https://sizin-odeme-linkiniz.com"))
         self.btn_back_from_ent = QPushButton(); self.btn_back_from_ent.setObjectName("text_btn"); self.btn_back_from_ent.setCursor(Qt.PointingHandCursor)
         self.btn_back_from_ent.clicked.connect(lambda: self.stacked_widget.setCurrentWidget(self.page_selection))
+
         box_layout.addWidget(self.lbl_pay_title); box_layout.addWidget(self.lbl_pay_price); box_layout.addSpacing(15)
         box_layout.addWidget(self.lbl_pf1); box_layout.addWidget(self.lbl_pf2); box_layout.addWidget(self.lbl_pf3); box_layout.addWidget(self.lbl_pf4)
         box_layout.addStretch(); box_layout.addWidget(self.btn_make_payment); box_layout.addSpacing(5); box_layout.addWidget(self.btn_back_from_ent, alignment=Qt.AlignCenter)
@@ -495,48 +551,35 @@ class DashboardView(QWidget):
 
     def on_create_finished(self, success, msg, error_type):
         t = DASHBOARD_LANGS[self.current_lang]
-        if success:
-            QTimer.singleShot(100, lambda: self.show_message_safe("Başarılı", msg, True))
+        if success: QTimer.singleShot(100, lambda: self.show_message_safe("Başarılı", msg, True))
         else:
-            if error_type == "LIMIT_EXCEEDED":
-                QTimer.singleShot(100, lambda: self.show_message_safe("Limit Uyarısı", t['err_freemium_limit'], False))
-            elif error_type == "UNAUTHORIZED":
-                QTimer.singleShot(100, self.handle_unauthorized)
-            else:
-                QTimer.singleShot(100, lambda: self.show_message_safe("Hata", msg, False))
+            if error_type == "LIMIT_EXCEEDED": QTimer.singleShot(100, lambda: self.show_message_safe("Limit Uyarısı", t['err_freemium_limit'], False))
+            elif error_type == "UNAUTHORIZED": QTimer.singleShot(100, self.handle_unauthorized)
+            else: QTimer.singleShot(100, lambda: self.show_message_safe("Hata", msg, False))
 
     def show_join_dialog(self):
         t = DASHBOARD_LANGS[self.current_lang]
-        dialog = CustomDialog(
-            self, self.is_dark_mode, 
-            t['dlg_join_title'], t['dlg_join_sub'], t['dlg_join_ph'], 
-            t['card_join_btn'], t['dlg_btn_cancel']
-        )
+        dialog = CustomDialog(self, self.is_dark_mode, t['dlg_join_title'], t['dlg_join_sub'], t['dlg_join_ph'], t['card_join_btn'], t['dlg_btn_cancel'])
         if dialog.exec() == QDialog.Accepted:
             invite_code = dialog.get_input_text()
             if invite_code:
                 self.join_thread = ApiJoinServerThread(invite_code)
                 self.join_thread.finished_signal.connect(self.on_join_finished)
                 self.join_thread.start()
-            else:
-                QMessageBox.warning(self, "Uyarı", "Lütfen bir davet kodu girin.")
+            else: QMessageBox.warning(self, "Uyarı", "Lütfen bir davet kodu girin.")
 
     def show_message_safe_join(self, title, msg, is_success):
         if is_success:
             QMessageBox.information(self, title, msg)
             self.fetch_my_servers()
-        else:
-            QMessageBox.warning(self, title, msg)
+        else: QMessageBox.warning(self, title, msg)
 
     def on_join_finished(self, success, msg, error_type):
         t = DASHBOARD_LANGS[self.current_lang]
-        if success: 
-            QTimer.singleShot(100, lambda: self.show_message_safe_join("Başarılı", msg, True))
+        if success: QTimer.singleShot(100, lambda: self.show_message_safe_join("Başarılı", msg, True))
         else: 
-            if error_type == "UNAUTHORIZED":
-                QTimer.singleShot(100, self.handle_unauthorized)
-            else:
-                QTimer.singleShot(100, lambda: self.show_message_safe_join("Hata", t['err_invalid_invite'], False))
+            if error_type == "UNAUTHORIZED": QTimer.singleShot(100, self.handle_unauthorized)
+            else: QTimer.singleShot(100, lambda: self.show_message_safe_join("Hata", t['err_invalid_invite'], False))
 
     def show_add_friend_dialog(self):
         t = DASHBOARD_LANGS[self.current_lang]
@@ -586,6 +629,7 @@ class DashboardView(QWidget):
         
         if hasattr(self, 'msg_input'):
             self.msg_input.setPlaceholderText(t['chat_ph']); self.btn_send_msg.setText(t['btn_send'])
+            if self.channel_list.count() > 0: self.populate_mock_channels()
             
         self.btn_mic.setToolTip(t['tip_mic'])
         self.btn_deafen.setToolTip(t['tip_deaf'])
