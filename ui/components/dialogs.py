@@ -86,46 +86,146 @@ class AddFriendDialog(QDialog):
 
 
 class ChannelDialog(QDialog):
-    def __init__(self, parent, is_dark_mode, lang_dict, mode="add", channel_name="", channel_type=0):
+    def __init__(self, parent, is_dark_mode, lang_dict, mode="add", channel_name="", channel_type=0, user_plan="standard"):
         super().__init__(parent)
-        self.lang = lang_dict; self.is_dark_mode = is_dark_mode; self.mode = mode
-        title = self.lang['ch_dlg_title_add'] if mode == "add" else self.lang['ch_dlg_title_edit']
-        self.setWindowTitle(title); self.setFixedSize(400, 280)
-        self.setWindowFlags(Qt.Dialog | Qt.FramelessWindowHint); self.setAttribute(Qt.WA_TranslucentBackground)
-
-        self.bg_frame = QFrame(self); self.bg_frame.setGeometry(0, 0, 400, 280); self.bg_frame.setObjectName("dialog_bg")
-        shadow = QGraphicsDropShadowEffect(self); shadow.setBlurRadius(25); shadow.setXOffset(0); shadow.setYOffset(5)
-        shadow.setColor(QColor(0, 0, 0, 180 if is_dark_mode else 80)); self.bg_frame.setGraphicsEffect(shadow)
-
-        layout = QVBoxLayout(self.bg_frame); layout.setContentsMargins(30, 25, 30, 25)
-        lbl_title = QLabel(title); lbl_title.setObjectName("dialog_title"); lbl_title.setAlignment(Qt.AlignCenter)
+        self.lang = lang_dict
+        self.is_dark_mode = is_dark_mode
+        self.mode = mode
+        self.user_plan = user_plan  # Kullanıcının planı: 'standard' veya 'enterprise'
         
-        self.inp_name = QLineEdit(); self.inp_name.setPlaceholderText(self.lang['ch_dlg_name'])
-        self.inp_name.setMinimumHeight(45); self.inp_name.setText(channel_name)
+        title = self.lang['ch_dlg_title_add'] if mode == "add" else self.lang['ch_dlg_title_edit']
+        self.setWindowTitle(title)
+        self.setFixedSize(450, 420) # Yükseklik reklam için artırıldı
+        self.setWindowFlags(Qt.Dialog | Qt.FramelessWindowHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
 
-        self.cb_type = QComboBox(); self.cb_type.setMinimumHeight(45)
+        self.setup_ui(channel_name, channel_type)
+
+    def setup_ui(self, channel_name, channel_type):
+        self.bg_frame = QFrame(self)
+        self.bg_frame.setGeometry(0, 0, 450, 420)
+        self.bg_frame.setObjectName("dialog_bg")
+        shadow = QGraphicsDropShadowEffect(self); shadow.setBlurRadius(25); shadow.setXOffset(0); shadow.setYOffset(5)
+        shadow.setColor(QColor(0, 0, 0, 180 if self.is_dark_mode else 80)); self.bg_frame.setGraphicsEffect(shadow)
+
+        layout = QVBoxLayout(self.bg_frame)
+        layout.setContentsMargins(30, 25, 30, 25)
+        layout.setSpacing(15)
+
+        lbl_title = QLabel(self.windowTitle())
+        lbl_title.setObjectName("dialog_title")
+        lbl_title.setAlignment(Qt.AlignCenter)
+        
+        self.inp_name = QLineEdit()
+        self.inp_name.setPlaceholderText(self.lang['ch_dlg_name'])
+        self.inp_name.setMinimumHeight(45)
+        self.inp_name.setText(channel_name)
+
+        self.cb_type = QComboBox()
+        self.cb_type.setMinimumHeight(45)
         self.cb_type.addItem(self.lang['type_text'], 0)  
-        self.cb_type.addItem(self.lang['type_board'], 3) 
+        self.cb_type.addItem(self.lang['type_board'], 3) # Kanban
         self.cb_type.addItem(self.lang['type_voice'], 2) 
         
+        # Düzenleme modundaysak mevcut tipi seç
         index = self.cb_type.findData(channel_type)
         if index >= 0: self.cb_type.setCurrentIndex(index)
 
-        btn_layout = QHBoxLayout()
-        btn_cancel = QPushButton("İptal"); btn_cancel.setObjectName("dialog_btn_cancel")
-        btn_cancel.setFixedSize(100, 42); btn_cancel.clicked.connect(self.reject)
-        btn_ok = QPushButton("Kaydet"); btn_ok.setObjectName("dialog_btn_ok")
-        btn_ok.setFixedSize(120, 42); btn_ok.clicked.connect(self.accept)
-        btn_layout.addStretch(); btn_layout.addWidget(btn_cancel); btn_layout.addWidget(btn_ok)
+        # Sinyal: Tip değişince kontrol et
+        self.cb_type.currentIndexChanged.connect(self.check_plan_restrictions)
 
-        layout.addWidget(lbl_title); layout.addSpacing(15); layout.addWidget(self.inp_name)
-        layout.addWidget(self.cb_type); layout.addStretch(); layout.addLayout(btn_layout)
+        # --- REKLAM / UPSELL ALANI ---
+        self.upsell_frame = QFrame()
+        self.upsell_frame.setObjectName("upsell_frame") # CSS'ten stil alacak
+        if self.is_dark_mode:
+            self.upsell_frame.setStyleSheet("background-color: #2a200d; border: 1px solid #b7791f; border-radius: 8px;")
+        
+        upsell_layout = QVBoxLayout(self.upsell_frame)
+        
+        self.lbl_lock_title = QLabel(self.lang.get('srv_kanban_restricted', 'Kilitli Özellik'))
+        self.lbl_lock_title.setObjectName("upsell_text")
+        self.lbl_lock_title.setAlignment(Qt.AlignCenter)
+        
+        self.lbl_ad_desc = QLabel(self.lang.get('srv_kanban_ad', 'Enterprise ile sınırsız özellikler.'))
+        self.lbl_ad_desc.setObjectName("upsell_desc")
+        self.lbl_ad_desc.setWordWrap(True)
+        self.lbl_ad_desc.setAlignment(Qt.AlignCenter)
+        
+        btn_layout_ad = QHBoxLayout()
+        self.btn_upgrade = QPushButton(self.lang.get('btn_upgrade_now', 'Yükselt'))
+        self.btn_upgrade.setStyleSheet("background-color: #f1c40f; color: black; font-weight: bold; border-radius: 4px; padding: 6px;")
+        self.btn_upgrade.setCursor(Qt.PointingHandCursor)
+        self.btn_upgrade.clicked.connect(lambda: webbrowser.open("https://sizin-odeme-linkiniz.com"))
+        
+        self.btn_toggle_ad = QPushButton(self.lang.get('btn_ad_close', 'Reklamı Kapat'))
+        self.btn_toggle_ad.setObjectName("secondary_btn")
+        self.btn_toggle_ad.setCursor(Qt.PointingHandCursor)
+        self.btn_toggle_ad.clicked.connect(self.toggle_ad_visibility)
+        
+        btn_layout_ad.addWidget(self.btn_upgrade)
+        btn_layout_ad.addWidget(self.btn_toggle_ad)
+        
+        upsell_layout.addWidget(self.lbl_lock_title)
+        upsell_layout.addWidget(self.lbl_ad_desc)
+        upsell_layout.addLayout(btn_layout_ad)
+
+        # -----------------------------
+
+        btn_layout = QHBoxLayout()
+        btn_cancel = QPushButton("İptal")
+        btn_cancel.setObjectName("dialog_btn_cancel")
+        btn_cancel.setFixedSize(100, 42)
+        btn_cancel.clicked.connect(self.reject)
+
+        self.btn_ok = QPushButton("Kaydet")
+        self.btn_ok.setObjectName("dialog_btn_ok")
+        self.btn_ok.setFixedSize(120, 42)
+        self.btn_ok.clicked.connect(self.accept)
+
+        btn_layout.addStretch()
+        btn_layout.addWidget(btn_cancel)
+        btn_layout.addWidget(self.btn_ok)
+
+        layout.addWidget(lbl_title)
+        layout.addWidget(self.inp_name)
+        layout.addWidget(self.cb_type)
+        layout.addWidget(self.upsell_frame) # Reklamı araya ekle
+        layout.addStretch()
+        layout.addLayout(btn_layout)
+        
         self.bg_frame.setStyleSheet(get_dialog_stylesheet(self.is_dark_mode))
+        
+        # İlk açılışta kontrol et
+        self.check_plan_restrictions()
+
+    def check_plan_restrictions(self):
+        selected_type = self.cb_type.currentData()
+        
+        # Kural: Eğer "Kanban (3)" seçiliyse ve kullanıcı "standard" ise kısıtla
+        if selected_type == 3 and self.user_plan == "standard":
+            self.upsell_frame.show()
+            self.btn_ok.setEnabled(False) # Kaydetmeyi engelle
+            self.btn_ok.setStyleSheet("background-color: #555; color: #888;") # Pasif renk
+        else:
+            self.upsell_frame.hide()
+            self.btn_ok.setEnabled(True)
+            self.btn_ok.setObjectName("dialog_btn_ok") # Orijinal stili geri yükle
+            # Stili tazelemek için (PySide bazen takılabiliyor)
+            self.btn_ok.setStyleSheet("") 
+
+    def toggle_ad_visibility(self):
+        # Sadece içeriği gizle, frame kalsın (animasyon eklenebilir)
+        if self.lbl_ad_desc.isVisible():
+            self.lbl_ad_desc.hide()
+            self.btn_upgrade.hide()
+            self.btn_toggle_ad.setText(self.lang.get('btn_ad_show', 'Reklam'))
+        else:
+            self.lbl_ad_desc.show()
+            self.btn_upgrade.show()
+            self.btn_toggle_ad.setText(self.lang.get('btn_ad_close', 'Kapat'))
 
     def get_data(self):
-        return self.inp_name.text().strip(), self.cb_type.currentData()
-
-
+        return self.inp_name.text().strip(), self.cb_type.currentData() 
 # ==========================================
 # YENİ: DROPDOWN'LI SUNUCU AYARLARI MODALI
 # ==========================================

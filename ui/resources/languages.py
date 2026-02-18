@@ -1,161 +1,413 @@
-# ui/resources/languages.py
+# ui/styles/dashboard_theme.py
 
-DASHBOARD_LANGS = {
-    'TR': {
-        'logo': "☁️ MySaaS Workspace", 'menu_title': "SUNUCULARIM",
-        'status_online': "🟢", 'status_offline': "⚫", 'logout_tip': "Ayarlar / Çıkış",
-        'theme_dark': "🌙 Koyu Tema", 'theme_light': "☀️ Açık Tema",
-        'select_title': "Çalışma Modelinizi Seçin", 'select_sub': "İhtiyaçlarınıza en uygun kullanım türünü belirleyerek başlayın.",
-        'std_card_title': "Standart Kullanıcı", 'std_card_desc': "Bireysel kullanım için temel özellikler ve 1 sunucu hakkı.", 'btn_continue': "Ücretsiz Devam Et",
-        'ent_card_title': "Enterprise (Premium)", 'ent_card_desc': "Ekipler ve şirketler için sınırsız erişim ve gelişmiş özellikler.", 'btn_examine': "Paketi İncele",
-        'welcome_title': "MySaaS'a Hoş Geldiniz!", 'welcome_sub': "Çalışmaya başlamak için aşağıdaki seçeneklerden birini seçin.",
-        'card_create_title': "Sunucu Oluştur", 'card_create_desc': "Kendi topluluğunuzu veya özel çalışma alanınızı kurun.", 'card_create_btn': "Oluştur",
-        'card_join_title': "Sunucuya Katıl", 'card_join_desc': "Elinizdeki davet bağlantısı ile mevcut bir sunucuya katılın.", 'card_join_btn': "Katıl",
-        'card_friend_title': "Arkadaş Ekle", 'card_friend_desc': "Arkadaşlarınızı ekleyerek anında direkt mesajlaşmaya başlayın.", 'card_friend_btn': "Ekle",
-        'ent_pay_title': "Enterprise Paket İçeriği", 'ent_pay_price': "$9.99 / Aylık",
-        'ent_f1': "★ Sınırsız Sunucu ve Çalışma Panosu", 'ent_f2': "★ Gelişmiş Görüntülü Arama & Sesli Sohbet",
-        'ent_f3': "★ Sınırsız Dosya Yükleme Kapasitesi", 'ent_f4': "★ 7/24 Öncelikli Teknik Destek",
-        'btn_pay': "💳 Ödeme Yap", 'btn_back': "⬅ Geri Dön",
-        'setup_title': "Sunucu Kurulum ve Ayarları", 'setup_sub': "Yeni çalışma alanınıza bir isim verin ve ekibinizi toplamaya başlayın.",
-        'setup_btn_icon': "📷 Sunucu İkonu Yükle (Opsiyonel)", 'setup_ph': "Sunucu Adı (Örn: Proje X Ekibi)", 
-        'setup_btn_create': "🚀 Sunucuyu Kur", 'setup_btn_cancel': "İptal",
-        'dlg_join_title': "Bir Sunucuya Katıl", 'dlg_join_sub': "Arkadaşınızdan aldığınız davet kodunu veya bağlantısını aşağıya girin.",
-        'dlg_join_ph': "Davet Kodu veya URL", 'dlg_btn_cancel': "İptal",
-        'search_title': "Arkadaş Bul & Ekle", 'search_sub': "Kullanıcı adı veya e-posta adresi ile arkadaşlarınızı arayın.",
-        'search_ph': "Kullanıcı Adı veya E-posta...", 'search_no_result': "Kullanıcı bulunamadı.", 'search_btn_add': "Ekle", 'search_btn_close': "Kapat",
-        'err_invalid_invite': "Geçersiz veya süresi dolmuş bir davet kodu girdiniz!",
-        'err_freemium_limit': "Ücretsiz planda maksimum sunucu limitinize (1) ulaştınız. Lütfen Enterprise pakete yükseltin.",
-        'err_401': "Oturum süreniz dolmuş veya geçersiz (401). Lütfen tekrar giriş yapın.",
-        'no_servers': "📌 Henüz sunucu yok",
-        'cat_text': "💬 METİN KANALLARI", 'cat_board': "📋 PANO KANALLARI",
-        'chat_ph': "Mesajınızı yazın...", 'btn_send': "Gönder",
-        'tip_mic': "Mikrofonu Aç/Kapat", 'tip_deaf': "Sesi Aç/Kapat",
-        'home_btn': "Ana Sayfa", 'friends_title': "👥 Arkadaşlar", 'friends_online': "Çevrimiçi", 'friends_all': "Tümü",
-        'friends_search': "Arkadaşlarda Ara...", 'friends_empty': "Henüz arkadaş listeniz boş.", 'btn_search_friend': "🔍 Arkadaş Ara",
-        'set_cat_personal': "👤 Kişisel Ayarlar", 'set_cat_server': "🏢 Sunucu Ayarları", 'set_cat_logout': "🚪 Çıkış Yap",
-        'set_pers_title': "Hesabım", 'set_pers_name': "Kullanıcı Adı (Değiştirilemez)", 'set_pers_email': "E-posta Adresi (Değiştirilemez)",
-        'set_pers_save': "Değişiklikleri Kaydet", 'set_srv_title': "Sunucu Ayarları", 'set_srv_desc': "Yönetici olduğunuz sunucuların genel ayarlarını buradan yapılandırabilirsiniz.",
-        'set_avatar_btn': "Fotoğraf Yükle", 'set_acc_title': "Hesap Bilgileri", 'set_acc_type': "Hesap Türü: Standart",
-        'set_acc_limit': "Sunucu Kurma Hakkı: 1", 'set_acc_upgrade': "🚀 Enterprise'a Yükselt ($9.99/Aylık)",
-        'set_pass_title': "Şifre Değiştir", 'set_pass_old': "Mevcut Şifre", 'set_pass_new': "Yeni Şifre", 'set_pass_rep': "Yeni Şifre (Tekrar)",
+def get_dashboard_stylesheet(is_dark_mode, is_mic_on, is_deafened):
+    # CSS parser'ın çökmemesi için renk mantığı Python tarafında
+    mic_bg = "transparent" if is_mic_on else "#ed4245"
+    deaf_bg = "transparent" if not is_deafened else "#ed4245"
+    
+    if is_dark_mode:
+        mic_color = "#dcddde" if is_mic_on else "#ffffff"
+        mic_hover_bg = "#35393f" if is_mic_on else "#c9383b"
         
-        # CRUD VE DROPDOWN METİNLERİ
-        'srv_select': "Yönetilecek Sunucuyu Seçin:",
-        'srv_no_admin': "Yönetici olduğunuz bir sunucu bulunmuyor.",
-        'srv_set_channels': "Sunucu Kanalları",
-        'btn_add_ch': "➕ Yeni Kanal",
-        'btn_edit_ch': "✏️ Düzenle",
-        'btn_del_ch': "🗑️ Sil",
-        'ch_dlg_title_add': "Yeni Kanal Oluştur",
-        'ch_dlg_title_edit': "Kanalı Düzenle",
-        'ch_dlg_name': "Kanal Adı (Boşluksuz)",
-        'ch_dlg_type': "Kanal Türü",
-        'type_text': "💬 Metin Kanalı",
-        'type_board': "📋 Kanban Panosu",
-        'type_voice': "🔊 Ses Kanalı"
-    },
-    'EN': {
-        'logo': "☁️ MySaaS Workspace", 'menu_title': "MY SERVERS",
-        'status_online': "🟢", 'status_offline': "⚫", 'logout_tip': "Settings / Logout",
-        'theme_dark': "🌙 Dark Mode", 'theme_light': "☀️ Light Mode",
-        'select_title': "Choose Your Working Model", 'select_sub': "Start by selecting the plan that best fits your needs.",
-        'std_card_title': "Standard User", 'std_card_desc': "Basic features for individual use and 1 server limit.", 'btn_continue': "Continue for Free",
-        'ent_card_title': "Enterprise (Premium)", 'ent_card_desc': "Unlimited access and advanced features for teams and companies.", 'btn_examine': "View Package",
-        'welcome_title': "Welcome to MySaaS!", 'welcome_sub': "Choose one of the options below to get started.",
-        'card_create_title': "Create Server", 'card_create_desc': "Set up your own community or private workspace.", 'card_create_btn': "Create",
-        'card_join_title': "Join Server", 'card_join_desc': "Join an existing server using an invite link.", 'card_join_btn': "Join",
-        'card_friend_title': "Add Friend", 'card_friend_desc': "Add your friends to start direct messaging instantly.", 'card_friend_btn': "Add Friend",
-        'ent_pay_title': "Enterprise Package Details", 'ent_pay_price': "$9.99 / Month",
-        'ent_f1': "★ Unlimited Servers and Workspaces", 'ent_f2': "★ Advanced Video & Voice Chat",
-        'ent_f3': "★ Unlimited File Upload Capacity", 'ent_f4': "★ 24/7 Priority Technical Support",
-        'btn_pay': "💳 Make Payment", 'btn_back': "⬅ Go Back",
-        'setup_title': "Server Setup & Settings", 'setup_sub': "Give your new workspace a name and start gathering your team.",
-        'setup_btn_icon': "📷 Upload Server Icon (Optional)", 'setup_ph': "Server Name (e.g. Project X Team)", 
-        'setup_btn_create': "🚀 Create Server", 'setup_btn_cancel': "Cancel",
-        'dlg_join_title': "Join a Server", 'dlg_join_sub': "Enter an invite code or link provided by your friend below.",
-        'dlg_join_ph': "Invite Code or URL", 'dlg_btn_cancel': "Cancel",
-        'search_title': "Find & Add Friends", 'search_sub': "Search for friends using their username or email address.",
-        'search_ph': "Username or Email...", 'search_no_result': "No users found.", 'search_btn_add': "Add", 'search_btn_close': "Close",
-        'err_invalid_invite': "You have entered an invalid or expired invite code!",
-        'err_freemium_limit': "You have reached your maximum server limit (1) on the free plan. Please upgrade.",
-        'err_401': "Session expired or invalid (401). Please log in again.",
-        'no_servers': "📌 No servers yet",
-        'cat_text': "💬 TEXT CHANNELS", 'cat_board': "📋 BOARD CHANNELS",
-        'chat_ph': "Type your message...", 'btn_send': "Send",
-        'tip_mic': "Toggle Microphone", 'tip_deaf': "Toggle Audio",
-        'home_btn': "Home", 'friends_title': "👥 Friends", 'friends_online': "Online", 'friends_all': "All",
-        'friends_search': "Search Friends...", 'friends_empty': "Your friends list is currently empty.", 'btn_search_friend': "🔍 Search Friend",
-        'set_cat_personal': "👤 Personal Settings", 'set_cat_server': "🏢 Server Settings", 'set_cat_logout': "🚪 Logout",
-        'set_pers_title': "My Account", 'set_pers_name': "Username (Locked)", 'set_pers_email': "Email Address (Locked)",
-        'set_pers_save': "Save Changes", 'set_srv_title': "Server Settings", 'set_srv_desc': "Configure global settings for the servers you manage here.",
-        'set_avatar_btn': "Upload Photo", 'set_acc_title': "Account Information", 'set_acc_type': "Account Type: Standard",
-        'set_acc_limit': "Server Limit: 1", 'set_acc_upgrade': "🚀 Upgrade to Enterprise ($9.99/Month)",
-        'set_pass_title': "Change Password", 'set_pass_old': "Current Password", 'set_pass_new': "New Password", 'set_pass_rep': "Repeat New Password",
+        deaf_color = "#dcddde" if not is_deafened else "#ffffff"
+        deaf_hover_bg = "#35393f" if not is_deafened else "#c9383b"
+
+        return f"""
+            /* GLOBAL: Koyu Tema Ana Arka Plan */
+            QWidget#dashboard_main, QFrame#page_bg, QStackedWidget#main_stack,
+            QFrame#selection_page_main, QFrame#standard_page_main, QFrame#enterprise_page_main,
+            QFrame#setup_page_main, QFrame#active_server_main, QFrame#friends_page_main {{ 
+                background-color: #313338; color: #dcddde; 
+            }}
+            QLabel {{ color: #ffffff; }}
+            
+            /* SOL MENÜ */
+            QFrame#sidebar {{ background-color: #1e2124; border-right: 1px solid #282b30; }}
+            QLabel#logo_text {{ color: #ffffff; font-size: 18px; font-weight: 800; }}
+            QLabel#menu_title {{ color: #87909c; font-size: 11px; font-weight: bold; margin-top: 10px; }}
+            
+            /* SUNUCU LİSTESİ */
+            QListWidget#server_list {{ background: transparent; border: none; outline: none; }}
+            QListWidget#server_list::item {{ color: #949ba4; padding: 10px 15px; border-radius: 6px; margin-bottom: 2px;}}
+            QListWidget#server_list::item:hover {{ background-color: #35393f; color: #dcddde; }}
+            QListWidget#server_list::item:selected {{ background-color: #4752c4; color: #ffffff; font-weight: bold; }}
+            
+            /* ALT PROFİL KARTI */
+            QFrame#floating_profile {{ background-color: #232428; border-radius: 12px; border: 1px solid #1e1f22; }}
+            QLabel#profile_avatar {{ background-color: #5865f2; border-radius: 20px; color: white; font-size: 20px; }}
+            QLabel#profile_user {{ color: #ffffff; font-weight: bold; font-size: 14px; }}
+            QLabel#profile_email {{ color: #949ba4; font-size: 11px; }}
+            
+            /* BUTONLAR (MIC/DEAFEN/SETTINGS) */
+            QPushButton#btn_settings {{ background: transparent; color: #dcddde; border: none; border-radius: 6px; font-size: 16px; }}
+            QPushButton#btn_settings:hover {{ background-color: #35393f; color: #ffffff; }}
+            
+            QPushButton#btn_mic {{ background-color: {mic_bg}; color: {mic_color}; border: none; border-radius: 6px; font-size: 16px; }}
+            QPushButton#btn_mic:hover {{ background-color: {mic_hover_bg}; color: #ffffff; }}
+            
+            QPushButton#btn_deafen {{ background-color: {deaf_bg}; color: {deaf_color}; border: none; border-radius: 6px; font-size: 16px; }}
+            QPushButton#btn_deafen:hover {{ background-color: {deaf_hover_bg}; color: #ffffff; }}
+
+            /* SAĞ İÇERİK BAŞLIĞI */
+            QFrame#content_area {{ background-color: #313338; }}
+            QFrame#header {{ background-color: #313338; border-bottom: 1px solid #282b30; }}
+            QLabel#channel_name {{ color: #ffffff; font-size: 20px; font-weight: 800; }}
+            QPushButton#theme_btn {{ background-color: #1e2124; color: #dcddde; border: 1px solid #444; border-radius: 6px; padding: 6px 12px; font-weight: bold; }}
+            QPushButton#theme_btn:hover {{ background-color: #444; }}
+            
+            QPushButton#header_toggle_btn {{ background-color: transparent; color: #ffffff; font-size: 22px; border: none; font-weight: bold; }}
+            QPushButton#header_toggle_btn:hover {{ color: #5865f2; }}
+            
+            /* DİL SEÇİMİ COMBOBOX */
+            QComboBox#lang_cb {{ background-color: #1e2124; color: #dcddde; border-radius: 6px; padding: 6px 10px 6px 15px; font-weight: bold; border: 1px solid #444; }}
+            QComboBox#lang_cb:hover {{ background-color: #444; }}
+            QComboBox#lang_cb::drop-down {{ border: none; width: 25px; }} 
+            QComboBox#lang_cb QAbstractItemView {{ background-color: #1e2328; color: #dcddde; border: 1px solid #444; border-radius: 6px; outline: none; padding: 4px; }}
+            QComboBox#lang_cb QAbstractItemView::item:hover {{ background-color: #2a3038; color: #4da3ff; }}
+
+            /* ORTA EKRAN KARTLARI */
+            QLabel#welcome_title {{ color: #ffffff; font-size: 32px; font-weight: 900; }}
+            QLabel#welcome_sub {{ color: #b5bac1; font-size: 16px; margin-bottom: 20px; }}
+            QFrame#action_card {{ background-color: #2b2d31; border: 1px solid #1e1f22; border-radius: 12px; }}
+            QFrame#action_card:hover {{ border: 1px solid #5865f2; background-color: #2e3035; }}
+            QFrame#enterprise_card {{ border: 1px solid rgba(24,119,242,0.5); background-color: rgba(24,119,242,0.1); }}
+            QFrame#enterprise_card:hover {{ border: 1px solid #1877f2; background-color: rgba(24,119,242,0.2); }}
+            QLabel#card_icon {{ font-size: 48px; margin-bottom: 10px; }}
+            QLabel#card_title {{ color: #ffffff; font-size: 18px; font-weight: bold; margin-bottom: 5px; }}
+            QLabel#card_desc {{ color: #949ba4; font-size: 13px; line-height: 1.4; }}
+            
+            QPushButton#primary_btn {{ background-color: #5865f2; color: white; border-radius: 6px; padding: 12px; font-weight: bold; font-size: 14px; border: none; }}
+            QPushButton#primary_btn:hover {{ background-color: #4752c4; }}
+            QPushButton#success_btn {{ background-color: #23a559; color: white; border-radius: 6px; padding: 12px; font-weight: bold; font-size: 14px; border: none; }}
+            QPushButton#success_btn:hover {{ background-color: #1b8546; }}
+            QPushButton#text_btn {{ background-color: transparent; color: #949ba4; font-weight: bold; font-size: 13px; border: none; }}
+            QPushButton#text_btn:hover {{ color: #ffffff; text-decoration: underline; }}
+            
+            QPushButton#secondary_btn {{ background-color: #2b2d31; color: #dcddde; border: 1px solid #444; border-radius: 6px; padding: 10px; font-weight: bold; font-size: 13px; }}
+            QPushButton#secondary_btn:hover {{ background-color: #35393f; }}
+
+            QFrame#payment_box {{ background-color: #2b2d31; border: 1px solid #4da3ff; border-radius: 16px; }}
+            QLabel#pay_title {{ color: #4da3ff; font-size: 22px; font-weight: bold; }}
+            QLabel#pay_price {{ color: #ffffff; font-size: 36px; font-weight: 900; }}
+            QLabel#pay_item {{ color: #dcddde; font-size: 15px; font-weight: 500; margin-bottom: 8px; }}
+            
+            /* KANAL KENAR ÇUBUĞU */
+            QFrame#channel_sidebar {{ background-color: #2b2d31; border-right: 1px solid #1e1f22; }}
+            QLabel#srv_title {{ color: #ffffff; font-size: 18px; font-weight: 800; border-bottom: 1px solid #1e1f22; padding-bottom: 15px; }}
+            QListWidget#channel_list {{ background: transparent; border: none; outline: none; }}
+            QListWidget#channel_list::item {{ color: #949ba4; padding: 8px 10px; border-radius: 4px; }}
+            QListWidget#channel_list::item:hover {{ background-color: #35393f; color: #dcddde; }}
+            QListWidget#channel_list::item:selected {{ background-color: #404249; color: #ffffff; font-weight: bold; }}
+            
+            /* SOHBET ALANI */
+            QFrame#chat_area {{ background-color: #313338; }}
+            QListWidget#msg_list {{ background: transparent; border: none; outline: none; color: #dcddde; }}
+            QFrame#chat_input_frame {{ background-color: #383a40; border-radius: 8px; }}
+            QLineEdit#chat_input {{ background: transparent; border: none; color: #dcddde; font-size: 14px; padding-left: 10px; }}
+            
+            QLineEdit {{ background-color: #1e1f22; border: 1px solid #444; border-radius: 8px; padding: 0 15px; font-size: 14px; color: #ffffff; }}
+            QLineEdit:focus {{ border: 1px solid #5865f2; }}
+            
+            /* ARKADAŞLAR LİSTESİ */
+            QListWidget#friends_list {{ background-color: #313338; border: none; outline: none; color: #dcddde; border-radius: 8px; }}
+            QListWidget#friends_list::item {{ background-color: #2b2d31; padding: 15px; border-radius: 8px; margin-bottom: 8px; color: #dcddde; border: 1px solid #1e1f22; }}
+            QListWidget#friends_list::item:hover {{ background-color: #35393f; }}
+            
+            QPushButton#tab_btn_active {{ background-color: #404249; color: white; border-radius: 6px; padding: 8px 15px; font-weight: bold; border: none; }}
+            QPushButton#tab_btn_active:hover {{ background-color: #4f545c; }}
+            
+            QPushButton#tab_btn {{ background-color: transparent; color: #949ba4; border-radius: 6px; padding: 8px 15px; font-weight: bold; border: none; }}
+            QPushButton#tab_btn:hover {{ background-color: #35393f; color: #dcddde; }}
+            
+            QLineEdit#search_input {{ background-color: #1e1f22; border: 1px solid #444; border-radius: 8px; padding: 0 15px; font-size: 14px; color: #ffffff; }}
+            QLineEdit#search_input:focus {{ border: 1px solid #5865f2; }}
+
+            /* ONAY KUTULARI (QMESSAGEBOX) */
+            QMessageBox {{ background-color: #313338; color: #dcddde; }}
+            QMessageBox QLabel {{ color: #dcddde; background: transparent; }}
+            QMessageBox QPushButton {{ background-color: #5865f2; color: white; border-radius: 6px; padding: 6px 15px; font-weight: bold; min-width: 60px; min-height: 25px; }}
+            QMessageBox QPushButton:hover {{ background-color: #4752c4; }}
+        """
+    else:
+        # AÇIK TEMA RENK AYARLARI
+        mic_color = "#4e5058" if is_mic_on else "#ffffff"
+        mic_hover_bg = "#e3e5e8" if is_mic_on else "#c9383b"
+        mic_hover_color = "#060607" if is_mic_on else "#ffffff"
         
-        'srv_select': "Select Server to Manage:",
-        'srv_no_admin': "You don't have any servers to manage.",
-        'srv_set_channels': "Server Channels",
-        'btn_add_ch': "➕ New Channel",
-        'btn_edit_ch': "✏️ Edit",
-        'btn_del_ch': "🗑️ Delete",
-        'ch_dlg_title_add': "Create New Channel",
-        'ch_dlg_title_edit': "Edit Channel",
-        'ch_dlg_name': "Channel Name (No spaces)",
-        'ch_dlg_type': "Channel Type",
-        'type_text': "💬 Text Channel",
-        'type_board': "📋 Kanban Board",
-        'type_voice': "🔊 Voice Channel"
-    },
-    'GER': {
-        'logo': "☁️ MySaaS Workspace", 'menu_title': "MEINE SERVER",
-        'status_online': "🟢", 'status_offline': "⚫", 'logout_tip': "Einstellungen / Abmelden",
-        'theme_dark': "🌙 Dunkel", 'theme_light': "☀️ Hell",
-        'select_title': "Wählen Sie Ihr Arbeitsmodell", 'select_sub': "Beginnen Sie mit der Auswahl des Plans.",
-        'std_card_title': "Standardbenutzer", 'std_card_desc': "Grundlegende Funktionen für Einzelpersonen (1 Server-Limit).", 'btn_continue': "Kostenlos fortfahren",
-        'ent_card_title': "Enterprise (Premium)", 'ent_card_desc': "Unbegrenzter Zugang und erweiterte Funktionen für Teams.", 'btn_examine': "Paket ansehen",
-        'welcome_title': "Willkommen bei MySaaS!", 'welcome_sub': "Wählen Sie eine der untenstehenden Optionen, um zu beginnen.",
-        'card_create_title': "Server erstellen", 'card_create_desc': "Richten Sie Ihre eigene Community oder Ihren Arbeitsbereich ein.", 'card_create_btn': "Erstellen",
-        'card_join_title': "Server beitreten", 'card_join_desc': "Treten Sie einem Server mit einem Einladungslink bei.", 'card_join_btn': "Beitreten",
-        'card_friend_title': "Freund hinzufügen", 'card_friend_desc': "Fügen Sie Freunde hinzu, um Direktnachrichten zu senden.", 'card_friend_btn': "Hinzufügen",
-        'ent_pay_title': "Enterprise-Paket Details", 'ent_pay_price': "$9.99 / Monat",
-        'ent_f1': "★ Unbegrenzte Server und Arbeitsbereiche", 'ent_f2': "★ Erweiterter Video- & Voice-Chat",
-        'ent_f3': "★ Unbegrenzte Datei-Upload-Kapazität", 'ent_f4': "★ 24/7 Priority Technischer Support",
-        'btn_pay': "💳 Bezahlen", 'btn_back': "⬅ Zurück",
-        'setup_title': "Server-Setup & Einstellungen", 'setup_sub': "Geben Sie Ihrem neuen Arbeitsbereich einen Namen und beginnen Sie.",
-        'setup_btn_icon': "📷 Server-Symbol hochladen (Optional)", 'setup_ph': "Servername (z.B. Projekt X)", 
-        'setup_btn_create': "🚀 Server erstellen", 'setup_btn_cancel': "Abbrechen",
-        'dlg_join_title': "Einem Server beitreten", 'dlg_join_sub': "Geben Sie unten einen Einladungscode oder -link ein.",
-        'dlg_join_ph': "Einladungscode oder URL", 'dlg_btn_cancel': "Abbrechen",
-        'search_title': "Freunde finden & hinzufügen", 'search_sub': "Suchen Sie nach Freunden anhand ihres Benutzernamens oder E-Mail.",
-        'search_ph': "Benutzername oder E-Mail...", 'search_no_result': "Keine Benutzer gefunden.", 'search_btn_add': "Hinzufügen", 'search_btn_close': "Schließen",
-        'err_invalid_invite': "Sie haben einen ungültigen Einladungscode eingegeben!",
-        'err_freemium_limit': "Sie haben das maximale Serverlimit erreicht. Bitte upgraden Sie auf Enterprise.",
-        'err_401': "Sitzung abgelaufen oder ungültig (401). Bitte loggen Sie sich erneut ein.",
-        'no_servers': "📌 Noch keine Server",
-        'cat_text': "💬 TEXTKANÄLE", 'cat_board': "📋 BOARD-KANÄLE",
-        'chat_ph': "Nachricht eingeben...", 'btn_send': "Senden",
-        'tip_mic': "Mikrofon umschalten", 'tip_deaf': "Audio umschalten",
-        'home_btn': "Startseite", 'friends_title': "👥 Freunde", 'friends_online': "Online", 'friends_all': "Alle",
-        'friends_search': "Freunde suchen...", 'friends_empty': "Ihre Freundesliste ist derzeit leer.", 'btn_search_friend': "🔍 Freunde suchen",
-        'set_cat_personal': "👤 Persönliche Einstellungen", 'set_cat_server': "🏢 Servereinstellungen", 'set_cat_logout': "🚪 Abmelden",
-        'set_pers_title': "Mein Konto", 'set_pers_name': "Benutzername (Gesperrt)", 'set_pers_email': "E-Mail-Adresse (Gesperrt)",
-        'set_pers_save': "Änderungen speichern", 'set_srv_title': "Servereinstellungen", 'set_srv_desc': "Konfigurieren Sie hier die globalen Einstellungen für die von Ihnen verwalteten Server.",
-        'set_avatar_btn': "Foto hochladen", 'set_acc_title': "Kontoinformationen", 'set_acc_type': "Kontotyp: Standard",
-        'set_acc_limit': "Serverlimit: 1", 'set_acc_upgrade': "🚀 Auf Enterprise upgraden ($9.99/Monat)",
-        'set_pass_title': "Passwort ändern", 'set_pass_old': "Aktuelles Passwort", 'set_pass_new': "Neues Passwort", 'set_pass_rep': "Neues Passwort (Wiederholen)",
-        
-        'srv_select': "Wählen Sie den zu verwaltenden Server:",
-        'srv_no_admin': "Sie haben keine Server zu verwalten.",
-        'srv_set_channels': "Serverkanäle",
-        'btn_add_ch': "➕ Neuer Kanal",
-        'btn_edit_ch': "✏️ Bearbeiten",
-        'btn_del_ch': "🗑️ Löschen",
-        'ch_dlg_title_add': "Neuen Kanal erstellen",
-        'ch_dlg_title_edit': "Kanal bearbeiten",
-        'ch_dlg_name': "Kanalname",
-        'ch_dlg_type': "Kanaltyp",
-        'type_text': "💬 Textkanal",
-        'type_board': "📋 Kanban Board",
-        'type_voice': "🔊 Sprachkanal"
-    }
-}
+        deaf_color = "#4e5058" if not is_deafened else "#ffffff"
+        deaf_hover_bg = "#e3e5e8" if not is_deafened else "#c9383b"
+        deaf_hover_color = "#060607" if not is_deafened else "#ffffff"
+
+        return f"""
+            /* GLOBAL: Açık Tema Zorlaması */
+            QWidget {{ color: #000000; }}
+            QWidget#dashboard_main, QFrame#page_bg, QStackedWidget#main_stack,
+            QFrame#selection_page_main, QFrame#standard_page_main, QFrame#enterprise_page_main,
+            QFrame#setup_page_main, QFrame#active_server_main, QFrame#friends_page_main {{ 
+                background-color: #ffffff; color: #000000; 
+            }}
+            
+            /* SOL MENÜ */
+            QFrame#sidebar {{ background-color: #f7f8fa; border-right: 1px solid #e3e5e8; }}
+            QLabel#logo_text {{ color: #000000; font-size: 18px; font-weight: 800; }}
+            QLabel#menu_title {{ color: #5c5e66; font-size: 11px; font-weight: bold; margin-top: 10px; }}
+            QListWidget#server_list {{ background: transparent; border: none; outline: none; }}
+            QListWidget#server_list::item {{ color: #4e5058; padding: 10px 15px; border-radius: 6px; margin-bottom: 2px; font-weight: 500; }}
+            QListWidget#server_list::item:hover {{ background-color: #e3e5e8; color: #000000; }}
+            QListWidget#server_list::item:selected {{ background-color: #1877f2; color: #ffffff; font-weight: bold; }}
+            
+            /* ALT PROFİL KARTI */
+            QFrame#floating_profile {{ background-color: #ffffff; border-radius: 12px; border: 1px solid #e3e5e8; }}
+            QLabel#profile_avatar {{ background-color: #1877f2; border-radius: 20px; color: white; font-size: 20px; }}
+            QLabel#profile_user {{ color: #000000; font-weight: bold; font-size: 14px; }}
+            QLabel#profile_email {{ color: #5c5e66; font-size: 11px; }}
+            
+            QPushButton#btn_settings {{ background: transparent; color: #4e5058; border: none; border-radius: 6px; font-size: 16px; }}
+            QPushButton#btn_settings:hover {{ background-color: #f0f2f5; color: #000000; }}
+            QPushButton#btn_mic {{ background-color: {mic_bg}; color: {mic_color}; border: none; border-radius: 6px; font-size: 16px; }}
+            QPushButton#btn_mic:hover {{ background-color: {mic_hover_bg}; color: {mic_hover_color}; }}
+            QPushButton#btn_deafen {{ background-color: {deaf_bg}; color: {deaf_color}; border: none; border-radius: 6px; font-size: 16px; }}
+            QPushButton#btn_deafen:hover {{ background-color: {deaf_hover_bg}; color: {deaf_hover_color}; }}
+
+            /* SAĞ İÇERİK */
+            QFrame#content_area {{ background-color: #ffffff; }}
+            QFrame#header {{ background-color: #ffffff; border-bottom: 1px solid #e3e5e8; }}
+            QLabel#channel_name {{ color: #000000; font-size: 20px; font-weight: 800; }}
+            QPushButton#theme_btn {{ background-color: #f0f2f5; color: #4e5058; border: 1px solid #ccd0d5; border-radius: 6px; padding: 6px 12px; font-weight: bold; }}
+            QPushButton#theme_btn:hover {{ background-color: #e3e5e8; color: #000000; }}
+            
+            QPushButton#header_toggle_btn {{ background-color: transparent; color: #000000; font-size: 22px; border: none; font-weight: bold; }}
+            QPushButton#header_toggle_btn:hover {{ color: #1877f2; }}
+            
+            QComboBox#lang_cb {{ background-color: #f0f2f5; color: #4e5058; border-radius: 6px; padding: 6px 10px 6px 15px; font-weight: bold; border: 1px solid #ccd0d5; }}
+            QComboBox#lang_cb:hover {{ background-color: #e3e5e8; }}
+            QComboBox#lang_cb::drop-down {{ border: none; width: 25px; }} 
+            QComboBox#lang_cb QAbstractItemView {{ background-color: #ffffff; color: #1c1e21; border: 1px solid #ccd0d5; border-radius: 6px; outline: none; padding: 4px; }}
+            QComboBox#lang_cb QAbstractItemView::item:hover {{ background-color: #f0f2f5; color: #1877f2; }}
+
+            QLabel#welcome_title {{ color: #000000; font-size: 32px; font-weight: 900; }}
+            QLabel#welcome_sub {{ color: #4e5058; font-size: 16px; margin-bottom: 20px; }}
+            QFrame#action_card {{ background-color: #ffffff; border: 1px solid #e3e5e8; border-radius: 12px; }}
+            QFrame#action_card:hover {{ border: 1px solid #1877f2; background-color: #f8f9fa; }}
+            QFrame#enterprise_card {{ border: 1px solid rgba(24,119,242,0.5); background-color: rgba(24,119,242,0.05); }}
+            QFrame#enterprise_card:hover {{ border: 1px solid #1877f2; background-color: rgba(24,119,242,0.1); }}
+            QLabel#card_icon {{ font-size: 48px; margin-bottom: 10px; }}
+            QLabel#card_title {{ color: #000000; font-size: 18px; font-weight: bold; margin-bottom: 5px; }}
+            QLabel#card_desc {{ color: #5c5e66; font-size: 13px; line-height: 1.4; }}
+            
+            QPushButton#primary_btn {{ background-color: #1877f2; color: white; border-radius: 6px; padding: 12px; font-weight: bold; font-size: 14px; border: none; }}
+            QPushButton#primary_btn:hover {{ background-color: #166fe5; }}
+            QPushButton#success_btn {{ background-color: #23a559; color: white; border-radius: 6px; padding: 10px; font-weight: bold; font-size: 14px; border: none; }}
+            QPushButton#success_btn:hover {{ background-color: #1b8546; }}
+            QPushButton#text_btn {{ background-color: transparent; color: #5c5e66; font-weight: bold; font-size: 13px; border: none; }}
+            QPushButton#text_btn:hover {{ color: #1877f2; text-decoration: underline; }}
+            QPushButton#secondary_btn {{ background-color: #f8f9fa; color: #4e5058; border: 1px solid #ccc; border-radius: 6px; padding: 10px; font-weight: bold; font-size: 13px; }}
+            QPushButton#secondary_btn:hover {{ background-color: #e3e5e8; }}
+
+            QFrame#payment_box {{ background-color: #f8f9fa; border: 1px solid #1877f2; border-radius: 16px; }}
+            QLabel#pay_title {{ color: #1877f2; font-size: 22px; font-weight: bold; }}
+            QLabel#pay_price {{ color: #060607; font-size: 36px; font-weight: 900; }}
+            QLabel#pay_item {{ color: #4e5058; font-size: 15px; font-weight: 500; margin-bottom: 8px; }}
+            
+            /* KANAL KENAR ÇUBUĞU */
+            QFrame#channel_sidebar {{ background-color: #f2f3f5; border-right: 1px solid #e3e5e8; }}
+            QLabel#srv_title {{ color: #060607; font-size: 18px; font-weight: 800; border-bottom: 1px solid #e3e5e8; padding-bottom: 15px; }}
+            QListWidget#channel_list {{ background: transparent; border: none; outline: none; }}
+            QListWidget#channel_list::item {{ color: #4e5058; padding: 8px 10px; border-radius: 4px; }}
+            QListWidget#channel_list::item:hover {{ background-color: #e3e5e8; color: #060607; }}
+            QListWidget#channel_list::item:selected {{ background-color: #d4d7dc; color: #060607; font-weight: bold; }}
+            
+            QFrame#chat_area {{ background-color: #ffffff; }}
+            QListWidget#msg_list {{ background: transparent; border: none; outline: none; color: #060607; }}
+            QFrame#chat_input_frame {{ background-color: #ebedef; border-radius: 8px; }}
+            QLineEdit#chat_input {{ background: transparent; border: none; color: #060607; font-size: 14px; padding-left: 10px; }}
+
+            QLineEdit {{ background-color: #f2f3f5; border: 1px solid #ccc; border-radius: 8px; padding: 0 15px; font-size: 14px; color: #060607; }}
+            QLineEdit:focus {{ border: 1px solid #1877f2; background-color: #ffffff; }}
+            
+            /* ARKADAŞLAR EKRANI - AÇIK TEMA */
+            QListWidget#friends_list {{ background-color: #ffffff; border: 1px solid #e3e5e8; border-radius: 8px; outline: none; color: #000000; }}
+            QListWidget#friends_list::item {{ background-color: #ffffff; border-bottom: 1px solid #f0f2f5; padding: 15px; margin: 0px; color: #000000; }}
+            QListWidget#friends_list::item:hover {{ background-color: #f7f8fa; }}
+            
+            QPushButton#tab_btn_active {{ background-color: #e3e5e8; color: #000000; border-radius: 6px; padding: 8px 15px; font-weight: bold; border: none; }}
+            QPushButton#tab_btn_active:hover {{ background-color: #d4d7dc; }}
+            QPushButton#tab_btn {{ background-color: transparent; color: #5c5e66; border-radius: 6px; padding: 8px 15px; font-weight: bold; border: none; }}
+            QPushButton#tab_btn:hover {{ background-color: #f0f2f5; color: #000000; }}
+            
+            QLineEdit#search_input {{ background-color: #f0f2f5; border: 1px solid #ccd0d5; border-radius: 8px; padding: 0 15px; font-size: 14px; color: #000000; }}
+            QLineEdit#search_input:focus {{ border: 2px solid #1877f2; background-color: #ffffff; }}
+
+            /* ONAY KUTULARI (QMESSAGEBOX) */
+            QMessageBox {{ background-color: #ffffff; color: #000000; }}
+            QMessageBox QLabel {{ color: #000000; background: transparent; }}
+            QMessageBox QPushButton {{ background-color: #1877f2; color: white; border-radius: 6px; padding: 6px 15px; font-weight: bold; min-width: 60px; min-height: 25px; border: none; }}
+            QMessageBox QPushButton:hover {{ background-color: #166fe5; }}
+        """
+
+def get_dialog_stylesheet(is_dark_mode):
+    if is_dark_mode:
+        return """
+            QFrame#dialog_bg { background-color: #313338; border-radius: 12px; border: 1px solid #1e1f22; }
+            QLabel#dialog_title { color: #ffffff; font-size: 20px; font-weight: 800; }
+            QLabel#dialog_sub { color: #b5bac1; font-size: 13px; }
+            QLineEdit { background-color: #1e1f22; border: 1px solid #1e1f22; border-radius: 8px; padding: 0 15px; font-size: 14px; color: #dbdee1; }
+            QLineEdit:focus { border: 1px solid #5865f2; }
+            
+            /* DROP-DOWN (AÇILIR KUTU) KOYU TEMA */
+            QComboBox { background-color: #1e1f22; border: 1px solid #444; border-radius: 8px; padding: 0 15px; font-size: 14px; color: #dbdee1; }
+            QComboBox:hover { border: 1px solid #5865f2; }
+            QComboBox::drop-down { border: none; width: 30px; }
+            QComboBox QAbstractItemView { background-color: #2b2d31; color: #dcddde; border: 1px solid #1e1f22; border-radius: 8px; outline: none; }
+            QComboBox QAbstractItemView::item { min-height: 35px; padding-left: 10px; }
+            QComboBox QAbstractItemView::item:hover { background-color: #35393f; color: #ffffff; }
+
+            QListWidget#result_list { background-color: transparent; border: none; outline: none; color: #dbdee1;}
+            QListWidget#result_list::item { background-color: #2b2d31; border-radius: 8px; margin-bottom: 5px; }
+            QListWidget#result_list::item:hover { background-color: #35393f; }
+            QLabel#row_email { color: #b5bac1; font-size: 11px; }
+            QPushButton#dialog_btn_cancel { background-color: transparent; color: #b5bac1; font-size: 14px; font-weight: bold; border-radius: 6px; padding: 10px; border: none; }
+            QPushButton#dialog_btn_cancel:hover { color: #ffffff; text-decoration: underline; }
+            QPushButton#dialog_btn_ok { background-color: #5865f2; color: white; font-size: 13px; font-weight: bold; border-radius: 6px; padding: 8px; border: none; }
+            QPushButton#dialog_btn_ok:hover { background-color: #4752c4; }
+            
+            /* REKLAM ALANI KOYU */
+            QFrame#upsell_frame { background-color: #2a200d; border: 1px solid #b7791f; border-radius: 8px; }
+            QLabel#upsell_text { color: #f1c40f; font-weight: bold; font-size: 14px; }
+            QLabel#upsell_desc { color: #dcddde; font-size: 12px; }
+            QPushButton#secondary_btn { background-color: transparent; color: #b5bac1; font-weight: bold; border: 1px solid #444; border-radius: 6px; padding: 6px; }
+            QPushButton#secondary_btn:hover { background-color: #35393f; color: white; }
+        """
+    else:
+        return """
+            QFrame#dialog_bg { background-color: #ffffff; border-radius: 12px; border: 1px solid #dcdfe3; }
+            QLabel#dialog_title { color: #000000; font-size: 20px; font-weight: 800; }
+            QLabel#dialog_sub { color: #4e5058; font-size: 13px; }
+            QLineEdit { background-color: #f0f2f5; border: 1px solid #ccd0d5; border-radius: 8px; padding: 0 15px; font-size: 14px; color: #000000; }
+            QLineEdit:focus { border: 1px solid #1877f2; background-color: #ffffff; }
+
+            /* DROP-DOWN (AÇILIR KUTU) AÇIK TEMA */
+            QComboBox { background-color: #f0f2f5; border: 1px solid #ccd0d5; border-radius: 8px; padding: 0 15px; font-size: 14px; color: #000000; }
+            QComboBox:hover { border: 1px solid #1877f2; background-color: #ffffff; }
+            QComboBox::drop-down { border: none; width: 30px; }
+            QComboBox QAbstractItemView { background-color: #ffffff; color: #000000; border: 1px solid #ccd0d5; border-radius: 8px; outline: none; }
+            QComboBox QAbstractItemView::item { min-height: 35px; padding-left: 10px; color: #000000; }
+            QComboBox QAbstractItemView::item:hover { background-color: #f0f2f5; color: #1877f2; }
+            
+            QListWidget#result_list { background-color: transparent; border: none; outline: none; color: #000000;}
+            QListWidget#result_list::item { background-color: #f7f8fa; border: 1px solid #e3e5e8; border-radius: 8px; margin-bottom: 5px; }
+            QListWidget#result_list::item:hover { background-color: #e3e5e8; }
+            QLabel#row_email { color: #5c5e66; font-size: 11px; }
+            QPushButton#dialog_btn_cancel { background-color: transparent; color: #4e5058; font-size: 14px; font-weight: bold; border-radius: 6px; padding: 10px; border: none; }
+            QPushButton#dialog_btn_cancel:hover { color: #000000; text-decoration: underline; }
+            QPushButton#dialog_btn_ok { background-color: #1877f2; color: white; font-size: 13px; font-weight: bold; border-radius: 6px; padding: 8px; border: none; }
+            QPushButton#dialog_btn_ok:hover { background-color: #166fe5; }
+
+            /* REKLAM ALANI AÇIK */
+            QFrame#upsell_frame { background-color: #fff8e1; border: 1px solid #ffe082; border-radius: 8px; }
+            QLabel#upsell_text { color: #b7791f; font-weight: bold; font-size: 14px; }
+            QLabel#upsell_desc { color: #333; font-size: 12px; }
+            QPushButton#secondary_btn { background-color: #ffffff; color: #333; font-weight: bold; border: 1px solid #ccc; border-radius: 6px; padding: 6px; }
+            QPushButton#secondary_btn:hover { background-color: #f0f0f0; }
+        """
+
+def get_settings_stylesheet(is_dark_mode):
+    if is_dark_mode:
+        return """
+            QFrame#dialog_bg { background-color: #313338; border-radius: 12px; border: 1px solid #1e1f22; }
+            QFrame#settings_sidebar { background-color: #2b2d31; border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+            QListWidget#settings_list { background: transparent; border: none; outline: none; font-size: 14px; font-weight: bold; }
+            QListWidget#settings_list::item { color: #b5bac1; padding: 12px 15px; border-radius: 6px; margin-bottom: 5px; }
+            QListWidget#settings_list::item:hover { background-color: #35393f; color: #dcddde; }
+            QListWidget#settings_list::item:selected { background-color: #404249; color: #ffffff; }
+            QFrame#settings_content, QFrame#settings_page_frame { background-color: #313338; border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
+            QLabel#settings_title { color: #ffffff; font-size: 22px; font-weight: 800; border-bottom: 1px solid #444; padding-bottom: 10px; margin-top: 15px; }
+            QLabel#bold_label { color: #dcddde; font-weight: bold; font-size: 13px; }
+            QLabel#desc_label, QLabel#normal_label { color: #949ba4; font-size: 13px; }
+            QLabel#big_avatar { background-color: #5865f2; color: white; font-size: 36px; border-radius: 40px; }
+            QPushButton#settings_close_btn { background-color: transparent; color: #949ba4; font-weight: bold; font-size: 20px; border: none; }
+            QPushButton#settings_close_btn:hover { color: #ffffff; }
+            QLineEdit { background-color: #1e1f22; border: 1px solid #444; border-radius: 8px; padding: 0 15px; font-size: 14px; color: #ffffff; }
+            QLineEdit:focus { border: 1px solid #5865f2; }
+            QLineEdit[readOnly="true"] { background-color: #232428; color: #87909c; border: 1px solid #1e1f22; }
+            
+            QComboBox { background-color: #1e1f22; border: 1px solid #444; border-radius: 8px; padding: 10px 15px; font-size: 14px; color: #ffffff; font-weight: bold; }
+            QComboBox:hover { border: 1px solid #5865f2; }
+            QComboBox::drop-down { border: none; width: 30px; }
+            QComboBox QAbstractItemView { background-color: #2b2d31; color: #ffffff; border: 1px solid #444; border-radius: 8px; outline: none; }
+            QComboBox QAbstractItemView::item { min-height: 35px; padding-left: 10px; color: #ffffff; }
+            QComboBox QAbstractItemView::item:hover, QComboBox QAbstractItemView::item:selected { background-color: #35393f; color: #ffffff; }
+            
+            QPushButton#primary_btn { background-color: #5865f2; color: white; border-radius: 6px; padding: 12px; font-weight: bold; font-size: 14px; border: none; }
+            QPushButton#primary_btn:hover { background-color: #4752c4; }
+            QPushButton#secondary_btn { background-color: #2b2d31; color: #dcddde; border: 1px solid #444; border-radius: 6px; padding: 10px; font-weight: bold; font-size: 13px; }
+            QPushButton#secondary_btn:hover { background-color: #35393f; }
+            QPushButton#success_btn { background-color: #23a559; color: white; border-radius: 6px; padding: 10px; font-weight: bold; font-size: 13px; border: none; }
+            QPushButton#success_btn:hover { background-color: #1b8546; }
+            
+            QFrame#account_box { background-color: #2b2d31; border: 1px solid #1e1f22; border-radius: 8px; }
+            QPushButton#upgrade_btn { background-color: #f1c40f; color: #000; font-weight: bold; border-radius: 6px; padding: 10px; font-size: 14px; border: none; }
+            QPushButton#upgrade_btn:hover { background-color: #d4ac0d; }
+            QScrollArea#settings_scroll { background: transparent; border: none; }
+            QScrollArea#settings_scroll > QWidget > QWidget { background: transparent; }
+            
+            QListWidget#channel_settings_list { background-color: #1e1f22; border: 1px solid #444; border-radius: 8px; outline: none; color: #dcddde; padding: 5px;}
+            QListWidget#channel_settings_list::item { background-color: #2b2d31; border-radius: 6px; margin-bottom: 3px; padding: 10px; }
+            QListWidget#channel_settings_list::item:hover { background-color: #35393f; }
+            QListWidget#channel_settings_list::item:selected { background-color: #404249; color: #ffffff; font-weight: bold; border: 1px solid #5865f2; }
+            
+            QMessageBox { background-color: #313338; color: #dcddde; }
+            QMessageBox QLabel { color: #dcddde; background: transparent; }
+            QMessageBox QPushButton { background-color: #5865f2; color: white; border-radius: 6px; padding: 6px 15px; font-weight: bold; min-width: 60px; min-height: 25px; border: none; }
+            QMessageBox QPushButton:hover { background-color: #4752c4; }
+        """
+    else:
+        return """
+            QFrame#dialog_bg { background-color: #ffffff; border-radius: 12px; border: 1px solid #ccc; }
+            QFrame#settings_sidebar { background-color: #f7f8fa; border-top-left-radius: 12px; border-bottom-left-radius: 12px; border-right: 1px solid #e3e5e8; }
+            QListWidget#settings_list { background: transparent; border: none; outline: none; font-size: 14px; font-weight: bold; }
+            QListWidget#settings_list::item { color: #4e5058; padding: 12px 15px; border-radius: 6px; margin-bottom: 5px; }
+            QListWidget#settings_list::item:hover { background-color: #e3e5e8; color: #000000; }
+            QListWidget#settings_list::item:selected { background-color: #d4d7dc; color: #000000; }
+            QFrame#settings_content, QFrame#settings_page_frame { background-color: #ffffff; border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
+            QLabel#settings_title { color: #000000; font-size: 22px; font-weight: 800; border-bottom: 1px solid #e3e5e8; padding-bottom: 10px; margin-top: 15px; }
+            QLabel#bold_label { color: #000000; font-weight: bold; font-size: 13px; }
+            QLabel#desc_label, QLabel#normal_label { color: #5c5e66; font-size: 13px; }
+            QLabel#big_avatar { background-color: #1877f2; color: white; font-size: 36px; border-radius: 40px; }
+            QPushButton#settings_close_btn { background-color: transparent; color: #5c5e66; font-weight: bold; font-size: 20px; border: none; }
+            QPushButton#settings_close_btn:hover { color: #000000; }
+            QLineEdit { background-color: #f0f2f5; border: 1px solid #ccd0d5; border-radius: 8px; padding: 0 15px; font-size: 14px; color: #000000; }
+            QLineEdit:focus { border: 1px solid #1877f2; background-color: #ffffff; }
+            QLineEdit[readOnly="true"] { background-color: #e3e5e8; color: #5c5e66; border: 1px solid #ccc; }
+            
+            /* EKLENEN: AÇIK TEMA COMBOBOX */
+            QComboBox { background-color: #f0f2f5; border: 1px solid #ccd0d5; border-radius: 8px; padding: 10px 15px; font-size: 14px; color: #000000; font-weight: bold; }
+            QComboBox:hover { border: 1px solid #1877f2; background-color: #ffffff; }
+            QComboBox::drop-down { border: none; width: 30px; }
+            QComboBox QAbstractItemView { background-color: #ffffff; color: #000000; border: 1px solid #ccd0d5; border-radius: 8px; outline: none; }
+            QComboBox QAbstractItemView::item { min-height: 35px; padding-left: 10px; color: #000000;}
+            QComboBox QAbstractItemView::item:hover, QComboBox QAbstractItemView::item:selected { background-color: #f0f2f5; color: #1877f2; }
+            
+            QPushButton#primary_btn { background-color: #1877f2; color: white; border-radius: 6px; padding: 12px; font-weight: bold; font-size: 14px; border: none; }
+            QPushButton#primary_btn:hover { background-color: #166fe5; }
+            QPushButton#secondary_btn { background-color: #f7f8fa; color: #000000; border: 1px solid #ccd0d5; border-radius: 6px; padding: 10px; font-weight: bold; font-size: 13px; }
+            QPushButton#secondary_btn:hover { background-color: #e3e5e8; }
+            QPushButton#success_btn { background-color: #23a559; color: white; border-radius: 6px; padding: 10px; font-weight: bold; font-size: 13px; border: none; }
+            QPushButton#success_btn:hover { background-color: #1b8546; }
+            
+            QFrame#account_box { background-color: #f7f8fa; border: 1px solid #e3e5e8; border-radius: 8px; }
+            QPushButton#upgrade_btn { background-color: #f1c40f; color: #000; font-weight: bold; border-radius: 6px; padding: 10px; font-size: 14px; border: none; }
+            QPushButton#upgrade_btn:hover { background-color: #d4ac0d; }
+            QScrollArea#settings_scroll { background: transparent; border: none; }
+            QScrollArea#settings_scroll > QWidget > QWidget { background: transparent; }
+            
+            QListWidget#channel_settings_list { background-color: #ffffff; border: 1px solid #ccd0d5; border-radius: 8px; outline: none; color: #000000; padding: 5px;}
+            QListWidget#channel_settings_list::item { background-color: #f7f8fa; border-radius: 6px; margin-bottom: 3px; padding: 10px; color: #000000; }
+            QListWidget#channel_settings_list::item:hover { background-color: #e3e5e8; }
+            QListWidget#channel_settings_list::item:selected { background-color: #d4d7dc; color: #000000; font-weight: bold; border: 1px solid #1877f2; }
+            
+            QMessageBox { background-color: #ffffff; color: #000000; }
+            QMessageBox QLabel { color: #000000; background: transparent; }
+            QMessageBox QPushButton { background-color: #1877f2; color: white; border-radius: 6px; padding: 6px 15px; font-weight: bold; min-width: 60px; min-height: 25px; border: none; }
+            QMessageBox QPushButton:hover { background-color: #166fe5; }
+        """
