@@ -25,33 +25,32 @@ class ApiCreateServerThread(QThread):
         try:
             headers = get_api_headers()
             res_server = requests.post(f"{BASE_API_URL}/servers", json={"name": self.server_name}, headers=headers, timeout=5)
+            
+            # JSON decode hatasını önlemek için kontrol
+            try:
+                data = res_server.json()
+            except:
+                data = {}
+
             if res_server.status_code not in [200, 201]:
                 if res_server.status_code == 401: self.finished_signal.emit(False, "", "UNAUTHORIZED")
                 elif res_server.status_code == 403: self.finished_signal.emit(False, "", "LIMIT_EXCEEDED")
                 else: self.finished_signal.emit(False, f"Hata: {res_server.status_code}", "GENERAL")
                 return
             
-            server_id = None
-            if res_server.text.strip():
-                try: server_id = res_server.json().get("id") or res_server.json().get("server_id")
-                except ValueError: pass
+            server_id = data.get("id") or data.get("server_id")
 
             if not server_id:
                 self.finished_signal.emit(True, f"'{self.server_name}' oluşturuldu! (ID alınamadı)", "NONE")
                 return
 
-            url_channel = f"{BASE_API_URL}/servers/{server_id}/channels"
-            requests.post(url_channel, json={"name": "genel-sohbet", "type": 0}, headers=headers, timeout=3)
-            res_kanban = requests.post(url_channel, json={"name": "Proje Panosu", "type": 3}, headers=headers, timeout=3)
-            
-            if res_kanban.status_code in [200, 201] and res_kanban.text.strip():
-                try:
-                    kanban_id = res_kanban.json().get("id") or res_kanban.json().get("channel_id")
-                    if kanban_id:
-                        requests.post(f"{BASE_API_URL}/boards/{kanban_id}/lists", json={"title": "📋 Yapılacaklar"}, headers=headers, timeout=3)
-                        requests.post(f"{BASE_API_URL}/boards/{kanban_id}/lists", json={"title": "⏳ Devam Edenler"}, headers=headers, timeout=3)
-                        requests.post(f"{BASE_API_URL}/boards/{kanban_id}/lists", json={"title": "✅ Tamamlananlar"}, headers=headers, timeout=3)
-                except ValueError: pass
+            # Default kanalları oluştur (Hata olsa bile devam et)
+            try:
+                url_channel = f"{BASE_API_URL}/servers/{server_id}/channels"
+                requests.post(url_channel, json={"name": "genel-sohbet", "type": 0}, headers=headers, timeout=3)
+                res_kanban = requests.post(url_channel, json={"name": "Proje Panosu", "type": 3}, headers=headers, timeout=3)
+            except: pass
+                    
             self.finished_signal.emit(True, f"'{self.server_name}' çalışma alanı hazır!", "NONE")
         except Exception as e: self.finished_signal.emit(False, f"Bağlantı koptu: {e}", "GENERAL")
 
@@ -60,7 +59,9 @@ class ApiFetchMyServersThread(QThread):
     def run(self):
         try:
             response = requests.get(f"{BASE_API_URL}/servers", headers=get_api_headers(), timeout=5)
-            if response.status_code == 200: self.finished_signal.emit(True, response.json(), "NONE") 
+            if response.status_code == 200: 
+                try: self.finished_signal.emit(True, response.json(), "NONE")
+                except: self.finished_signal.emit(False, [], "GENERAL")
             elif response.status_code == 401: self.finished_signal.emit(False, [], "UNAUTHORIZED")
             else: self.finished_signal.emit(False, [], "GENERAL")
         except: self.finished_signal.emit(False, [], "GENERAL")
@@ -95,10 +96,18 @@ class ApiAddFriendThread(QThread):
         super().__init__(); self.target_user_id = target_user_id
     def run(self):
         try:
+            # 405 Hatası genellikle yanlış metod (GET/POST) veya URL sonundaki '/' karakterinden kaynaklanır.
+            # Burada POST kullanıyoruz.
             response = requests.post(f"{BASE_API_URL}/friends/add", json={"friend_id": self.target_user_id}, headers=get_api_headers(), timeout=5)
-            if response.status_code == 200: self.finished_signal.emit(True, "İstek gönderildi.")
-            else: self.finished_signal.emit(False, f"Reddedildi ({response.status_code})")
-        except: self.finished_signal.emit(False, "Bağlantı hatası.")
+            
+            if response.status_code == 200: 
+                self.finished_signal.emit(True, "İstek gönderildi.")
+            elif response.status_code == 405:
+                self.finished_signal.emit(False, "Sunucu Metod Hatası (405). API kontrol edilmeli.")
+            else: 
+                self.finished_signal.emit(False, f"Reddedildi ({response.status_code})")
+        except Exception as e: 
+            self.finished_signal.emit(False, f"Bağlantı hatası: {str(e)}")
 
 # --- KANAL CRUD İŞLEMLERİ THREADLERİ ---
 
@@ -148,14 +157,10 @@ class ApiDeleteChannelThread(QThread):
             else: self.finished_signal.emit(False, "Silme başarısız.")
         except: self.finished_signal.emit(False, "Bağlantı hatası.")
 
-
-# --- ARKADAŞLIK VE DAVET İSTEKLERİ ---
-
 class ApiFetchFriendRequestsThread(QThread):
     finished_signal = Signal(bool, list)
     def run(self):
         try:
-            # Örnek Endpoint: GET /friends/requests
             res = requests.get(f"{BASE_API_URL}/friends/requests", headers=get_api_headers(), timeout=5)
             if res.status_code == 200: self.finished_signal.emit(True, res.json())
             else: self.finished_signal.emit(False, [])
@@ -166,22 +171,20 @@ class ApiHandleRequestThread(QThread):
     def __init__(self, req_id, endpoint_suffix, action="accept"):
         super().__init__()
         self.req_id = req_id
-        self.endpoint_suffix = endpoint_suffix # 'friends' veya 'servers'
-        self.action = action # 'accept' veya 'reject'
+        self.endpoint_suffix = endpoint_suffix 
+        self.action = action 
     def run(self):
         try:
-            # Örnek: POST /friends/requests/123/accept
             url = f"{BASE_API_URL}/{self.endpoint_suffix}/requests/{self.req_id}/{self.action}"
             res = requests.post(url, headers=get_api_headers(), timeout=5)
             if res.status_code == 200: self.finished_signal.emit(True, "İşlem başarılı.")
-            else: self.finished_signal.emit(False, "İşlem başarısız.")
+            else: self.finished_signal.emit(False, f"Hata: {res.status_code}")
         except: self.finished_signal.emit(False, "Bağlantı hatası.")
 
 class ApiFetchServerInvitesThread(QThread):
     finished_signal = Signal(bool, list)
     def run(self):
         try:
-            # Örnek Endpoint: GET /servers/invites
             res = requests.get(f"{BASE_API_URL}/servers/invites", headers=get_api_headers(), timeout=5)
             if res.status_code == 200: self.finished_signal.emit(True, res.json())
             else: self.finished_signal.emit(False, [])
